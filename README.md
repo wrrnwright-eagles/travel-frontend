@@ -30,6 +30,7 @@ npm run dev
 5. Open http://localhost:8081 in a browser to view the project running.
 
 6. (Optional) Compile the project for production.
+7. 
 
 ```
 npm run build
