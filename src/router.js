@@ -20,9 +20,19 @@ const router = createRouter({
       component: () => import("./views/EditRecipe.vue"),
     },
     {
-      path: "/ingredients",
-      name: "ingredients",
-      component: () => import("./views/IngredientList.vue"),
+      path: "/activities",
+      name: "activities",
+      component: () => import("./views/ActivityList.vue"),
+    },
+    {
+      path: "/flights",
+      name: "flights",
+      component: () => import("./views/FlightList.vue"),
+    },
+    {
+      path: "/hotels",
+      name: "hotels",
+      component: () => import("./views/HotelList.vue"),
     },
   ],
 });
