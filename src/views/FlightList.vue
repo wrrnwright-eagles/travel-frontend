@@ -3,7 +3,7 @@ import { onMounted } from "vue";
 import { ref } from "vue";
 import FlightServices from "../services/FlightServices.js";
 
-const flightNumber = ref([]);
+const flights = ref([]);
 const departureLocation = ref([]);
 const departureDateTime = ref([]);
 const arrivalLocation = ref([]);
@@ -135,7 +135,7 @@ function closeSnackBar() {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in flight" :key="item.flightNumber">
+          <tr v-for="item in flights" :key="item.flightNumber">
             <td>{{ item.flightNumber }}</td>
             <td>{{ item.departureDateTime }}</td>
             <td>${{ item.departureLocation }}</td>

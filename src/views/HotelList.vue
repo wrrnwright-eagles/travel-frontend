@@ -1,12 +1,12 @@
 <script setup>
 import { onMounted } from "vue";
 import { ref } from "vue";
-import ActivityServices from "../services/ActivityServices.js";
+import HotelServices from "../services/HotelServices.js";
 
-const activities = ref([]);
-const dateTime = ref([]);
+const hotels = ref([]);
+const checkInDate = ref([]);
+const checkOutDate = ref([]);
 const location = ref([]);
-const description = ref([]);
 const isAdd = ref(false);
 const isEdit = ref(false);
 const user = ref(false);
@@ -15,23 +15,23 @@ const snackbar = ref({
   color: "",
   text: "",
 });
-const newActivity = ref({
+const newHotel = ref({
   id: undefined,
   name: undefined,
-  dateTime: undefined,
+  checkInDate: undefined,
+  checkOutDate: undefined,
   location: undefined,
-  description: undefined,
 });
 
 onMounted(async () => {
-  await getActivities();
+  await getHotels();
   user.value = JSON.parse(localStorage.getItem("user"));
 });
 
-async function getActivities() {
-  await ActivityServices.getActivities()
+async function getHotels() {
+  await HotelServices.getHotels()
     .then((response) => {
-      activities.value = response.data;
+      hotels.value = response.data;
     })
     .catch((error) => {
       console.log(error);
@@ -41,14 +41,14 @@ async function getActivities() {
     });
 }
 
-async function addActivity() {
+async function addHotel() {
   isAdd.value = false;
-  delete newActivity.id;
-  await ActivityServices.addActivity(newActivity.value)
+  delete newHotel.id;
+  await HotelServices.addHotel(newHotel.value)
     .then(() => {
       snackbar.value.value = true;
       snackbar.value.color = "green";
-      snackbar.value.text = `${newActivity.value.name} added successfully!`;
+      snackbar.value.text = `${newHotel.value.name} added successfully!`;
     })
     .catch((error) => {
       console.log(error);
@@ -56,16 +56,16 @@ async function addActivity() {
       snackbar.value.color = "error";
       snackbar.value.text = error.response.data.message;
     });
-  await getActivities();
+  await getHotels();
 }
 
-async function updateActivity() {
+async function updateHotel() {
   isEdit.value = false;
-  await ActivityServices.updateActivity(newActivity.value)
+  await HotelServices.updateHotel(newHotel.value)
     .then(() => {
       snackbar.value.value = true;
       snackbar.value.color = "green";
-      snackbar.value.text = `${newActivity.name} updated successfully!`;
+      snackbar.value.text = `${newHotel.name} updated successfully!`;
     })
     .catch((error) => {
       console.log(error);
@@ -73,14 +73,14 @@ async function updateActivity() {
       snackbar.value.color = "error";
       snackbar.value.text = error.response.data.message;
     });
-  await getActivities();
+  await getHotels();
 }
 
 function openAdd() {
-  newActivity.value.name = undefined;
-  newActivity.value.dateTime = undefined;
-  newActivity.value.location = undefined;
-  newActivity.value.description = undefined;
+  newHotel.value.name = undefined;
+  newHotel.value.checkInDate = undefined;
+  newHotel.value.checkOutDate = undefined;
+  newHotel.value.location = undefined;
   isAdd.value = true;
 }
 
@@ -89,11 +89,11 @@ function closeAdd() {
 }
 
 function openEdit(item) {
-  newActivity.value.id = item.id;
-  newActivity.value.name = item.name;
-  newActivity.value.dateTime = item.dateTime;
-  newActivity.value.location = item.location;
-  newActivity.value.description = item.description;
+  newHotel.value.id = item.id;
+  newHotel.value.name = item.name;
+  newHotel.value.checkInDate = item.checkInDate;
+  newHotel.value.checkOutDate = item.checkOutDate;
+  newHotel.value.location = item.location;
   isEdit.value = true;
 }
 
@@ -112,7 +112,7 @@ function closeSnackBar() {
       <v-row align="center" class="mb-4">
         <v-col cols="10"
           ><v-card-title class="pl-0 text-h4 font-weight-bold"
-            >Activities
+            >Hotels
           </v-card-title>
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
@@ -124,17 +124,17 @@ function closeSnackBar() {
         <thead>
           <tr>
             <th class="text-left">Name</th>
-            <th class="text-left">Date & Time</th>
+            <th class="text-left">Check In Date</th>
+            <th class="text-left">Check Out Date</th>
             <th class="text-left">Location</th>
-            <th class="text-left">Description</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in activities" :key="item.name">
+          <tr v-for="item in hotels" :key="item.name">
             <td>{{ item.name }}</td>
-            <td>{{ item.dateTime }}</td>
+            <td>{{ item.checkInDate }}</td>
+            <td>{{ item.checkOutDate }}</td>
             <td>${{ item.location }}</td>
-            <td>${{ item.description }}</td>
             <td>
               <v-icon
                 size="small"
@@ -150,33 +150,34 @@ function closeSnackBar() {
         <v-card class="rounded-lg elevation-5">
           <v-card-item>
             <v-card-title class="headline mb-2"
-              >{{ isAdd ? "Add Activity" : isEdit ? "Edit Activity" : "" }}
+              >{{ isAdd ? "Add Hotel" : isEdit ? "Edit Hotel" : "" }}
             </v-card-title>
           </v-card-item>
           <v-card-text>
             <v-text-field
-              v-model="newActivity.name"
+              v-model="newHotel.name"
               :items="name"
               label="Name"
               required
             ></v-text-field>
             <v-text-field
-              v-model.date="newActivity.dateTime"
-              :items="dateTime"
-              label="Date Time"
+              v-model.date="newHotel.checkInDate"
+              :items="checkInDate"
+              label="Check In Date"
               type="date"
               required
             ></v-text-field>
             <v-text-field
-              v-model="newActivity.location"
-              :items="location"
-              label="Location"
+              v-model.date="newHotel.checkOutDate"
+              :items="checkOutDate"
+              label="Check Out Date"
+              type="date"
               required
             ></v-text-field>
             <v-text-field
-              v-model="newActivity.description"
-              :items="description"
-              label="Description"
+              v-model="newHotel.location"
+              :items="location"
+              label="Location"
               required
             ></v-text-field>
           </v-card-text>
@@ -192,10 +193,10 @@ function closeSnackBar() {
               variant="flat"
               color="primary"
               @click="
-                isAdd ? addActivity() : isEdit ? updateActivity() : false
+                isAdd ? addHotel() : isEdit ? updateHotel() : false
               "
               >{{
-                isAdd ? "Add Activity" : isEdit ? "Update Activity" : ""
+                isAdd ? "Add Hotel" : isEdit ? "Update Hotel" : ""
               }}</v-btn
             >
           </v-card-actions>
