@@ -20,12 +20,12 @@ const user = ref({
 
 onMounted(async () => {
   if (localStorage.getItem("user") !== null) {
-    router.push({ name: "recipes" });
+    router.push({ name: "itineraries" });
   }
 });
 
-function navigateToRecipes() {
-  router.push({ name: "recipes" });
+function navigateToItineraries() {
+  router.push({ name: "itineraries" });
 }
 
 async function createAccount() {
@@ -52,7 +52,7 @@ async function login() {
       snackbar.value.value = true;
       snackbar.value.color = "green";
       snackbar.value.text = "Login successful!";
-      router.push({ name: "recipes" });
+      router.push({ name: "itineraries" });
     })
     .catch((error) => {
       console.log(error);
@@ -109,7 +109,7 @@ function closeSnackBar() {
             class="ml-2"
             variant="flat"
             color="secondary"
-            @click="navigateToRecipes()"
+            @click="navigateToItineraries()"
           >
             View Published Itineraries
           </v-btn>
