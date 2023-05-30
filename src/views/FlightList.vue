@@ -1,11 +1,13 @@
 <script setup>
 import { onMounted } from "vue";
 import { ref } from "vue";
-import ActivityServices from "../services/ActivityServices.js";
+import FlightServices from "../services/FlightServices.js";
 
-const dateTime = ref([]);
-const location = ref([]);
-const description = ref([]);
+const flightNumber = ref([]);
+const departureLocation = ref([]);
+const departureDateTime = ref([]);
+const arrivalLocation = ref([]);
+const arrivalDateTime = ref([]);
 const isAdd = ref(false);
 const isEdit = ref(false);
 const user = ref(false);
@@ -14,23 +16,24 @@ const snackbar = ref({
   color: "",
   text: "",
 });
-const newActivity = ref({
+const newFlight = ref({
   id: undefined,
-  name: undefined,
-  dateTime: undefined,
-  location: undefined,
-  description: undefined,
+  flightNumber: undefined,
+  departureLocation: undefined,
+  departureDateTime: undefined,
+  arrivalLocation: undefined,
+  arrivalDateTime: undefined,
 });
 
 onMounted(async () => {
-  await getActivities();
+  await getFlights();
   user.value = JSON.parse(localStorage.getItem("user"));
 });
 
-async function getActivities() {
-  await ActivityServices.getActivities()
+async function getFlights() {
+  await FlightServices.getFlights()
     .then((response) => {
-      activity.value = response.data;
+      flight.value = response.data;
     })
     .catch((error) => {
       console.log(error);
@@ -40,14 +43,14 @@ async function getActivities() {
     });
 }
 
-async function addActivity() {
+async function addFlight() {
   isAdd.value = false;
-  delete newActivity.id;
-  await ActivityServices.addActivity(newActivity.value)
+  delete newFlight.id;
+  await FlightServices.addFlight(newFlight.value)
     .then(() => {
       snackbar.value.value = true;
       snackbar.value.color = "green";
-      snackbar.value.text = `${newActivity.value.name} added successfully!`;
+      snackbar.value.text = `${newFlight.value.flightNumber} added successfully!`;
     })
     .catch((error) => {
       console.log(error);
@@ -55,16 +58,16 @@ async function addActivity() {
       snackbar.value.color = "error";
       snackbar.value.text = error.response.data.message;
     });
-  await getActivities();
+  await getFlights();
 }
 
-async function updateActivity() {
+async function updateFlight() {
   isEdit.value = false;
-  await ActivityServices.updateActivity(newActivity.value)
+  await FlightServices.updateFlight(newFlight.value)
     .then(() => {
       snackbar.value.value = true;
       snackbar.value.color = "green";
-      snackbar.value.text = `${newActivity.name} updated successfully!`;
+      snackbar.value.text = `${newFlight.flightNumber} updated successfully!`;
     })
     .catch((error) => {
       console.log(error);
@@ -72,14 +75,15 @@ async function updateActivity() {
       snackbar.value.color = "error";
       snackbar.value.text = error.response.data.message;
     });
-  await getActivities();
+  await getFlights();
 }
 
 function openAdd() {
-  newActivity.value.name = undefined;
-  newActivity.value.dateTime = undefined;
-  newActivity.value.location = undefined;
-  newActivity.value.description = undefined;
+  newFlight.value.flightNumber = undefined;
+  newFlight.value.departureLocation = undefined;
+  newFlight.value.departureDateTime = undefined;
+  newFlight.value.arrivalLocation = undefined;
+  newFlight.value.arrivalDateTime = undefined;
   isAdd.value = true;
 }
 
@@ -88,11 +92,12 @@ function closeAdd() {
 }
 
 function openEdit(item) {
-  newActivity.value.id = item.id;
-  newActivity.value.name = item.name;
-  newActivity.value.dateTime = item.dateTime;
-  newActivity.value.location = item.location;
-  newActivity.value.description = item.description;
+  newFlight.value.id = item.id;
+  newFlight.value.flightNumber = item.flightNumber;
+  newFlight.value.departureLocation = item.departureLocation;
+  newFlight.value.departureDateTime = item.departureDateTime;
+  newFlight.value.arrivalLocation = item.arrivalLocation;
+  newFlight.value.arrivalDateTime = item.arrivalDateTime;
   isEdit.value = true;
 }
 
@@ -111,7 +116,7 @@ function closeSnackBar() {
       <v-row align="center" class="mb-4">
         <v-col cols="10"
           ><v-card-title class="pl-0 text-h4 font-weight-bold"
-            >Activities
+            >Flights
           </v-card-title>
         </v-col>
         <v-col class="d-flex justify-end" cols="2">
@@ -122,18 +127,20 @@ function closeSnackBar() {
       <v-table class="rounded-lg elevation-5">
         <thead>
           <tr>
-            <th class="text-left">Name</th>
-            <th class="text-left">Date & Time</th>
-            <th class="text-left">Location</th>
-            <th class="text-left">Description</th>
+            <th class="text-left">Flight Number</th>
+            <th class="text-left">Depature Date & Time</th>
+            <th class="text-left">Departure Location</th>
+            <th class="text-left">Arrival Date & Time</th>
+            <th class="text-left">Arrival Location</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in activity" :key="item.name">
-            <td>{{ item.name }}</td>
-            <td>{{ item.dateTime }}</td>
-            <td>${{ item.location }}</td>
-            <td>${{ item.description }}</td>
+          <tr v-for="item in flight" :key="item.flightNumber">
+            <td>{{ item.flightNumber }}</td>
+            <td>{{ item.departureDateTime }}</td>
+            <td>${{ item.departureLocation }}</td>
+            <td>${{ item.arrivalDateTime }}</td>
+            <td>${{ item.arrivalLocation }}</td>
             <td>
               <v-icon
                 size="small"
@@ -149,32 +156,40 @@ function closeSnackBar() {
         <v-card class="rounded-lg elevation-5">
           <v-card-item>
             <v-card-title class="headline mb-2"
-              >{{ isAdd ? "Add Activity" : isEdit ? "Edit Activity" : "" }}
+              >{{ isAdd ? "Add Flight" : isEdit ? "Edit Flight" : "" }}
             </v-card-title>
           </v-card-item>
           <v-card-text>
             <v-text-field
-              v-model="newActivity.name"
-              :items="name"
-              label="Name"
-              required
-            ></v-text-field>
-            <v-datetime-picker
-              v-model="newActivity.dateTime"
-              :items="dateTime"
-              label="Date Time"
-              required
-            ></v-datetime-picker>
-            <v-text-field
-              v-model="newActivity.location"
-              :items="location"
-              label="Location"
+              v-model="newFlight.flightNumber"
+              :items="flightNumber"
+              label="Flight Number"
               required
             ></v-text-field>
             <v-text-field
-              v-model="newActivity.description"
-              :items="description"
-              label="Description"
+              v-model.date="newFlight.departureDateTime"
+              :items="departureDateTime"
+              label="Departure Date & Time"
+              type="date"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="newFlight.departureLocation"
+              :items="departureLocation"
+              label="Departure Location"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model.date="newFlight.arrivalDateTime"
+              :items="arrivalDateTime"
+              label="Arrival Date & Time"
+              type="date"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="newFlight.arrivalLocation"
+              :items="arrivalLocation"
+              label="Arrival Location"
               required
             ></v-text-field>
           </v-card-text>
@@ -190,10 +205,10 @@ function closeSnackBar() {
               variant="flat"
               color="primary"
               @click="
-                isAdd ? addActivity() : isEdit ? updateActivity() : false
+                isAdd ? addFlight() : isEdit ? updateFlight() : false
               "
               >{{
-                isAdd ? "Add Activity" : isEdit ? "Update Activity" : ""
+                isAdd ? "Add Flight" : isEdit ? "Update Flight" : ""
               }}</v-btn
             >
           </v-card-actions>

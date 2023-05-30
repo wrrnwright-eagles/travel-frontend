@@ -20,6 +20,11 @@ const router = createRouter({
       component: () => import("./views/EditRecipe.vue"),
     },
     {
+      path: "/itineraries",
+      name: "itineraries",
+      component: () => import("./views/ItineraryList.vue"),
+    },
+    {
       path: "/activities",
       name: "activities",
       component: () => import("./views/ActivityList.vue"),
