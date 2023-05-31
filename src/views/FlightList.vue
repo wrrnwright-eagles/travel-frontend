@@ -33,7 +33,7 @@ onMounted(async () => {
 async function getFlights() {
   await FlightServices.getFlights()
     .then((response) => {
-      flight.value = response.data;
+      flights.value = response.data;
     })
     .catch((error) => {
       console.log(error);
