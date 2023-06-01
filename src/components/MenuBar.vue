@@ -30,8 +30,8 @@ function logout() {
 </script>
 
 <template>
-  <div>
-    <v-app-bar color="primary" app dark>
+  <div class="gradient-background">
+    <v-app-bar color="navy" app dark>
       <router-link :to="{ name: 'itineraries' }">
         <v-img
           class="mx-2"
@@ -89,3 +89,9 @@ function logout() {
     </v-app-bar>
   </div>
 </template>
+
+<style scoped>
+.gradient-background {
+  background: linear-gradient(to right, lightblue , blue);
+}
+</style>
