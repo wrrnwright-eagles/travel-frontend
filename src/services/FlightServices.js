@@ -17,5 +17,3 @@ export default {
     return apiClient.delete("flights/" + flightId);
   },
 };
-
-// test
