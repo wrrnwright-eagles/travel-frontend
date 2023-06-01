@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted } from "vue";
 import { ref } from "vue";
-import RecipeCard from "../components/RecipeCardComponent.vue";
+import ItineraryCard from "../components/ItineraryCardComponent.vue";
 import ItineraryServices from "../services/ItineraryServices.js";
 
 const itineraries = ref([]);
@@ -32,7 +32,7 @@ async function getItineraries() {
   if (user.value !== null && user.value.id !== null) {
     await ItineraryServices.getItinerariesByUserId(user.value.id)
       .then((response) => {
-        intineraries.value = response.data;
+        itineraries.value = response.data; // corrected here
       })
       .catch((error) => {
         console.log(error);
@@ -43,7 +43,7 @@ async function getItineraries() {
   } else {
     await ItineraryServices.getItineraries()
       .then((response) => {
-        intineraries.value = response.data;
+        itineraries.value = response.data; // corrected here
       })
       .catch((error) => {
         console.log(error);
@@ -53,6 +53,7 @@ async function getItineraries() {
       });
   }
 }
+
 
 async function addItinerary() {
   isAdd.value = false;
@@ -69,7 +70,7 @@ async function addItinerary() {
       snackbar.value.color = "error";
       snackbar.value.text = error.response.data.message;
     });
-  await getRecipes();
+  await getItineraries();
 }
 
 function openAdd() {
@@ -100,7 +101,7 @@ function closeSnackBar() {
         </v-col>
       </v-row>
 
-      <RecipeCard
+      <ItineraryCard
         v-for="itinerary in itineraries"
         :key="itineraries.id"
         :itinerary="itinerary"
