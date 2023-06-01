@@ -76,6 +76,23 @@ async function updateHotel() {
   await getHotels();
 }
 
+async function deleteHotel(item) {
+  const hotelId = item.id;
+  await HotelServices.deleteHotel(hotelId)
+    .then(() => {
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = `${item.name} deleted successfully!`;
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
+  await getHotels();
+}
+
 function openAdd() {
   newHotel.value.name = undefined;
   newHotel.value.checkInDate = undefined;
@@ -140,6 +157,11 @@ function closeSnackBar() {
                 size="small"
                 icon="mdi-pencil"
                 @click="openEdit(item)"
+              ></v-icon>
+              <v-icon
+                size="small"
+                icon="mdi-trash-can"
+                @click="deleteHotel(item)"
               ></v-icon>
             </td>
           </tr>
