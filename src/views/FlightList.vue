@@ -61,6 +61,23 @@ async function addFlight() {
   await getFlights();
 }
 
+async function deleteFlight(item) {
+  const flightId = item.id;
+  await FlightServices.deleteFlight(flightId)
+    .then(() => {
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = `${item.name} deleted successfully!`;
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
+  await getFlights();
+}
+
 async function updateFlight() {
   isEdit.value = false;
   await FlightServices.updateFlight(newFlight.value)
@@ -146,6 +163,11 @@ function closeSnackBar() {
                 size="small"
                 icon="mdi-pencil"
                 @click="openEdit(item)"
+              ></v-icon>
+              <v-icon
+                size="small"
+                icon="mdi-trash-can"
+                @click="deleteFlight(item)"
               ></v-icon>
             </td>
           </tr>
