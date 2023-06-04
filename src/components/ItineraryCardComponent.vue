@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import ItineraryActivityServices from "../services/ItineraryActivityServices.js";
 import ItineraryStepServices from "../services/ItineraryStepServices";
 
+
 const router = useRouter();
 
 const showDetails = ref(false);
@@ -34,7 +35,7 @@ async function getItineraryActivities() {
 }
 
 async function getItinerarySteps() {
-  await ItineraryStepServices.getItineraryStepsForItineraryWithActivities(
+  await ItineraryStepServices.getItineraryStepsForItinerary(
     props.itinerary.id
   )
     .then((response) => {
@@ -102,12 +103,12 @@ function navigateToEdit() {
             }}/{{ itineraryActivity.activity.unit }})
           </v-list-item>
         </v-list>
-        <h3>itinerary Steps</h3>
+        <h3>Trip Details</h3>
         <v-table>
           <thead>
             <tr>
-              <th class="text-left">Step</th>
-              <th class="text-left">Instruction</th>
+              <th class="text-left">Location</th>
+              <th class="text-left">Dates</th>
               <th class="text-left">Activities</th>
             </tr>
           </thead>
@@ -119,7 +120,7 @@ function navigateToEdit() {
                 <v-chip
                   size="small"
                   v-for="activity in step.itineraryActivity"
-                  :key="Activity.id"
+                  :key="activity.id"
                   pill
                   >{{ activity.activity.name }}</v-chip
                 >

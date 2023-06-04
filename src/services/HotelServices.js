@@ -16,4 +16,7 @@ export default {
   deleteHotel(hotelId) {
     return apiClient.delete("hotels/" + hotelId);
   },
+  getHotelsForItinerary(itineraryId) {
+    return apiClient.get("itineraries/" + itineraryId + "/hotels");
+  },
 };
