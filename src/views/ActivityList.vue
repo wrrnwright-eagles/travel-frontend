@@ -59,6 +59,23 @@ async function addActivity() {
   await getActivities();
 }
 
+async function deleteActivity(item) {
+  const activityId = item.id;
+  await ActivityServices.deleteActivity(activityId)
+    .then(() => {
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = `${item.name} deleted successfully!`;
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
+  await getActivities();
+}
+
 async function updateActivity() {
   isEdit.value = false;
   await ActivityServices.updateActivity(newActivity.value)
@@ -140,6 +157,11 @@ function closeSnackBar() {
                 size="small"
                 icon="mdi-pencil"
                 @click="openEdit(item)"
+              ></v-icon>
+              <v-icon
+                size="small"
+                icon="mdi-trash-can"
+                @click="deleteActivity(item)"
               ></v-icon>
             </td>
           </tr>

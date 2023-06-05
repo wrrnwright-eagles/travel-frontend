@@ -73,6 +73,29 @@ function closeCreateAccount() {
 function closeSnackBar() {
   snackbar.value.value = false;
 }
+
+async function forgotPassword() {
+  const email = prompt("Please enter your email:");
+
+  // Perform validation on the entered email if needed
+
+  await UserServices.forgotPassword(email)
+    .then(() => {
+      snackbar.value = {
+        value: true,
+        color: "green",
+        text: "Reset link sent to your email!",
+      };
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value = {
+        value: true,
+        color: "error",
+        text: "Failed to send reset link.",
+      };
+    });
+}
 </script>
 
 <template>
@@ -94,25 +117,18 @@ function closeSnackBar() {
           ></v-text-field>
         </v-card-text>
         <v-card-actions>
-          <v-btn variant="flat" color="secondary" @click="openCreateAccount()"
-            >Create Account</v-btn
-          >
+          <v-btn variant="flat" color="secondary" @click="openCreateAccount()">Create Account</v-btn>
           <v-spacer></v-spacer>
 
           <v-btn variant="flat" color="primary" @click="login()">Login</v-btn>
+
+          <v-btn variant="flat" color="secondary" @click="forgotPassword">Forgot Password</v-btn>
         </v-card-actions>
       </v-card>
 
       <v-card class="rounded-lg elevation-5 my-8">
         <v-card-title class="text-center headline">
-          <v-btn
-            class="ml-2"
-            variant="flat"
-            color="secondary"
-            @click="navigateToItineraries()"
-          >
-            View Published Itineraries
-          </v-btn>
+          <v-btn class="ml-2" variant="flat" color="secondary" @click="navigateToItineraries()">View Published Itineraries</v-btn>
         </v-card-title>
       </v-card>
 
@@ -120,41 +136,15 @@ function closeSnackBar() {
         <v-card class="rounded-lg elevation-5">
           <v-card-title class="headline mb-2">Create Account </v-card-title>
           <v-card-text>
-            <v-text-field
-              v-model="user.firstName"
-              label="First Name"
-              required
-            ></v-text-field>
-
-            <v-text-field
-              v-model="user.lastName"
-              label="Last Name"
-              required
-            ></v-text-field>
-
-            <v-text-field
-              v-model="user.email"
-              label="Email"
-              required
-            ></v-text-field>
-
-            <v-text-field
-              v-model="user.password"
-              label="Password"
-              required
-            ></v-text-field>
+            <v-text-field v-model="user.firstName" label="First Name" required></v-text-field>
+            <v-text-field v-model="user.lastName" label="Last Name" required></v-text-field>
+            <v-text-field v-model="user.email" label="Email" required></v-text-field>
+            <v-text-field v-model="user.password" label="Password" required></v-text-field>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn
-              variant="flat"
-              color="secondary"
-              @click="closeCreateAccount()"
-              >Close</v-btn
-            >
-            <v-btn variant="flat" color="primary" @click="createAccount()"
-              >Create Account</v-btn
-            >
+            <v-btn variant="flat" color="secondary" @click="closeCreateAccount()">Close</v-btn>
+            <v-btn variant="flat" color="primary" @click="createAccount()">Create Account</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -163,13 +153,7 @@ function closeSnackBar() {
         {{ snackbar.text }}
 
         <template v-slot:actions>
-          <v-btn
-            :color="snackbar.color"
-            variant="text"
-            @click="closeSnackBar()"
-          >
-            Close
-          </v-btn>
+          <v-btn :color="snackbar.color" variant="text" @click="closeSnackBar()">Close</v-btn>
         </template>
       </v-snackbar>
     </div>

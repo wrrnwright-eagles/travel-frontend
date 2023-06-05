@@ -1,44 +1,45 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import RecipeIngredientServices from "../services/RecipeIngredientServices.js";
-import RecipeStepServices from "../services/RecipeStepServices";
+import ItineraryActivityServices from "../services/ItineraryActivityServices.js";
+import ItineraryStepServices from "../services/ItineraryStepServices";
+
 
 const router = useRouter();
 
 const showDetails = ref(false);
-const recipeIngredients = ref([]);
-const recipeSteps = ref([]);
+const itineraryActivities = ref([]);
+const itinerarySteps = ref([]);
 const user = ref(null);
 
 const props = defineProps({
-  recipe: {
+  itinerary: {
     required: true,
   },
 });
 
 onMounted(async () => {
-  await getRecipeIngredients();
-  await getRecipeSteps();
+  await getItineraryActivities();
+  await getItinerarySteps();
   user.value = JSON.parse(localStorage.getItem("user"));
 });
 
-async function getRecipeIngredients() {
-  await RecipeIngredientServices.getRecipeIngredientsForRecipe(props.recipe.id)
+async function getItineraryActivities() {
+  await ItineraryActivityServices.getItineraryActivitiesForItinerary(props.itinerary.id)
     .then((response) => {
-      recipeIngredients.value = response.data;
+      itineraryActivities.value = response.data;
     })
     .catch((error) => {
       console.log(error);
     });
 }
 
-async function getRecipeSteps() {
-  await RecipeStepServices.getRecipeStepsForRecipeWithIngredients(
-    props.recipe.id
+async function getItinerarySteps() {
+  await ItineraryStepServices.getItineraryStepsForItinerary(
+    props.itinerary.id
   )
     .then((response) => {
-      recipeSteps.value = response.data;
+      itinerarySteps.value = response.data;
     })
     .catch((error) => {
       console.log(error);
@@ -46,7 +47,7 @@ async function getRecipeSteps() {
 }
 
 function navigateToEdit() {
-  router.push({ name: "editRecipe", params: { id: props.recipe.id } });
+  router.push({ name: "editItinerary", params: { id: props.itinerary.id } });
 }
 </script>
 
@@ -58,14 +59,14 @@ function navigateToEdit() {
     <v-card-title class="headline">
       <v-row align="center">
         <v-col cols="10">
-          {{ recipe.name }}
+          {{ itinerary && itinerary.name }}
           <v-chip class="ma-2" color="primary" label>
             <v-icon start icon="mdi-account-circle-outline"></v-icon>
-            {{ recipe.servings }} Servings
+            {{ itinerary && itinerary.servings }} Servings
           </v-chip>
           <v-chip class="ma-2" color="accent" label>
             <v-icon start icon="mdi-clock-outline"></v-icon>
-            {{ recipe.time }} minutes
+            {{ itinerary && itinerary.time }} minutes
           </v-chip>
         </v-col>
         <v-col class="d-flex justify-end">
@@ -79,49 +80,49 @@ function navigateToEdit() {
       </v-row>
     </v-card-title>
     <v-card-text class="body-1">
-      {{ recipe.description }}
+      {{ itinerary && itinerary.description }}
     </v-card-text>
     <v-expand-transition>
       <v-card-text class="pt-0" v-show="showDetails">
-        <h3>Ingredients</h3>
+        <h3>Activities</h3>
         <v-list>
           <v-list-item
-            v-for="recipeIngredient in recipeIngredients"
-            :key="recipeIngredient.id"
+            v-for="itineraryActivity in itineraryActivities"
+            :key="itineraryActivity.id"
           >
             <b
-              >{{ recipeIngredient.quantity }}
+              >{{ itineraryActivity.quantity }}
               {{
-                `${recipeIngredient.ingredient.unit}${
-                  recipeIngredient.quantity > 1 ? "s" : ""
+                `${itineraryActivity.activity.unit}${
+                  itineraryActivity.quantity > 1 ? "s" : ""
                 }`
               }}</b
             >
-            of {{ recipeIngredient.ingredient.name }} (${{
-              recipeIngredient.ingredient.pricePerUnit
-            }}/{{ recipeIngredient.ingredient.unit }})
+            of {{ itineraryActivity.activity.name }} (${{
+              itineraryActivity.activity.pricePerUnit
+            }}/{{ itineraryActivity.activity.unit }})
           </v-list-item>
         </v-list>
-        <h3>Recipe Steps</h3>
+        <h3>Trip Details</h3>
         <v-table>
           <thead>
             <tr>
-              <th class="text-left">Step</th>
-              <th class="text-left">Instruction</th>
-              <th class="text-left">Ingredients</th>
+              <th class="text-left">Location</th>
+              <th class="text-left">Dates</th>
+              <th class="text-left">Activities</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="step in recipeSteps" :key="step.id">
+            <tr v-for="step in itinerarySteps" :key="step.id">
               <td>{{ step.stepNumber }}</td>
               <td>{{ step.instruction }}</td>
               <td>
                 <v-chip
                   size="small"
-                  v-for="ingredient in step.recipeIngredient"
-                  :key="ingredient.id"
+                  v-for="activity in step.itineraryActivity"
+                  :key="activity.id"
                   pill
-                  >{{ ingredient.ingredient.name }}</v-chip
+                  >{{ activity.activity.name }}</v-chip
                 >
               </td>
             </tr>

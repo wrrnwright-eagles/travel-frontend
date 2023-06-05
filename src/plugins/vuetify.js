@@ -17,6 +17,7 @@ const OCTheme = {
     blue: "#196CA2",
     yellow: "#F8C545",
     darkblue: "#032F45",
+    navy: "#000040", 
   },
 };
 
