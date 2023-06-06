@@ -9,14 +9,15 @@ async function addUser(user) {
 }
 
 async function loginUser(user) {
-  console.log(user);
-  return apiClient.post("login", user, {
+  console.log(user.value); // Access the value property
+
+  return apiClient.post("login", user.value, { // Pass user.value instead of user
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
       "X-Requested-With": "XMLHttpRequest",
       crossDomain: true,
-      Authorization: "Basic " + btoa(user.email + ":" + user.password),
+      Authorization: "Basic " + btoa(user.value.email + ":" + user.value.password),
     },
   });
 }
