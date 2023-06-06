@@ -15,7 +15,7 @@ const snackbar = ref({
 const newItinerary = ref({
   name: "",
   description: "",
-  servings: 0,
+  location: 0,
   time: "30",
   isPublished: false,
 });

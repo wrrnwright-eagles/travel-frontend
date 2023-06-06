@@ -178,7 +178,6 @@ function closeSnackBar() {
           <v-card-text>
             <v-text-field
               v-model="newHotel.name"
-              :items="name"
               label="Name"
               required
             ></v-text-field>
