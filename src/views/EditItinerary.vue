@@ -8,7 +8,6 @@ import ItineraryServices from "../services/ItineraryServices";
 import HotelServices from "../services/HotelServices";
 import FlightServices from "../services/FlightServices";
 
-
 const route = useRoute();
 
 const itinerary = ref({});
