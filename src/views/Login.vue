@@ -31,34 +31,41 @@ function navigateToItineraries() {
 async function createAccount() {
   await UserServices.addUser(user.value)
     .then(() => {
-      snackbar.value.value = true;
-      snackbar.value.color = "green";
-      snackbar.value.text = "Account created successfully!";
+      snackbar.value = {
+        value: true,
+        color: "green",
+        text: "Account created successfully!"
+      };
       router.push({ name: "login" });
     })
     .catch((error) => {
       console.log(error);
-      snackbar.value.value = true;
-      snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
+      snackbar.value = {
+        value: true,
+        color: "error",
+        text: error.response.data.message
+      };
     });
 }
-
 async function login() {
   console.log(user.value);
   await UserServices.loginUser(user)
     .then((data) => {
       window.localStorage.setItem("user", JSON.stringify(data.data));
-      snackbar.value.value = true;
-      snackbar.value.color = "green";
-      snackbar.value.text = "Login successful!";
+      snackbar.value = {
+        value: true,
+        color: "green",
+        text: "Login successful!"
+      };
       router.push({ name: "itineraries" });
     })
     .catch((error) => {
       console.log(error);
-      snackbar.value.value = true;
-      snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
+      snackbar.value = {
+        value: true,
+        color: "error",
+        text: error.response.data.message
+      };
     });
 }
 

@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import ItineraryActivityServices from "../services/ItineraryActivityServices.js";
 import ItineraryStepServices from "../services/ItineraryStepServices";
+import UserServices from "../services/UserServices.js";
 
 
 const router = useRouter();
@@ -34,6 +35,8 @@ async function getItineraryActivities() {
     });
 }
 
+
+
 async function getItinerarySteps() {
   await ItineraryStepServices.getItineraryStepsForItinerary(
     props.itinerary.id
@@ -49,6 +52,19 @@ async function getItinerarySteps() {
 function navigateToEdit() {
   router.push({ name: "editItinerary", params: { id: props.itinerary.id } });
 }
+
+async function handleSubscribe() {
+  try {
+    await UserServices.subscribeToItinerary(user.value, props.itinerary.id);
+    console.log('Subscribed to Itinerary!');
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Expose handleSubscribe to the template
+defineExpose({ handleSubscribe });
+
 </script>
 
 <template>
@@ -56,29 +72,38 @@ function navigateToEdit() {
     class="rounded-lg elevation-5 mb-8"
     @click="showDetails = !showDetails"
   >
-    <v-card-title class="headline">
-      <v-row align="center">
-        <v-col cols="10">
-          {{ itinerary && itinerary.name }}
-          <v-chip class="ma-2" color="primary" label>
-            <v-icon start icon="mdi-account-circle-outline"></v-icon>
-            {{ itinerary && itinerary.servings }} Servings
-          </v-chip>
-          <v-chip class="ma-2" color="accent" label>
-            <v-icon start icon="mdi-clock-outline"></v-icon>
-            {{ itinerary && itinerary.time }} minutes
-          </v-chip>
-        </v-col>
-        <v-col class="d-flex justify-end">
-          <v-icon
-            v-if="user !== null"
-            size="small"
-            icon="mdi-pencil"
-            @click="navigateToEdit()"
-          ></v-icon>
-        </v-col>
-      </v-row>
-    </v-card-title>
+  <v-card-title class="headline">
+  <v-row align="center">
+    <v-col cols="10">
+      {{ itinerary && itinerary.name }}
+      <v-chip class="ma-2" color="primary" label>
+        <v-icon start icon="mdi-account-circle-outline"></v-icon>
+        {{ itinerary && itinerary.subscribers }} Subscribers
+      </v-chip>
+      <v-chip class="ma-2" color="accent" label>
+        <v-icon start icon="mdi-clock-outline"></v-icon>
+        {{ itinerary && itinerary.location }} Location
+      </v-chip>
+    </v-col>
+    <v-col class="d-flex flex-column align-end">
+      <v-icon
+        v-if="user !== null"
+        size="small"
+        icon="mdi-pencil"
+        @click.stop="navigateToEdit()"
+      ></v-icon>
+      <!-- New subscribe button with mt-2 class for margin-top -->
+      <v-btn
+        v-if="user !== null"
+        color="primary"
+        @click.stop="handleSubscribe()"
+        class="mt-2"
+      >
+        Subscribe
+      </v-btn>
+    </v-col>
+  </v-row>
+</v-card-title>
     <v-card-text class="body-1">
       {{ itinerary && itinerary.description }}
     </v-card-text>

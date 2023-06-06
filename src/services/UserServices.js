@@ -10,13 +10,13 @@ async function addUser(user) {
 
 async function loginUser(user) {
   console.log(user);
-  return apiClient.post("login", user.value, {
+  return apiClient.post("login", user, {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
       "X-Requested-With": "XMLHttpRequest",
       crossDomain: true,
-      Authorization: "Basic " + btoa(user.value.email + ":" + user.value.password),
+      Authorization: "Basic " + btoa(user.email + ":" + user.password),
     },
   });
 }
@@ -29,10 +29,15 @@ async function forgotPassword(email) {
   return apiClient.post("forgot-password", { email });
 }
 
+async function subscribeToItinerary(userId, itineraryId) {
+  return apiClient.post('subscribe', { userId, itineraryId });
+}
+
 export default {
   getUser,
   addUser,
   loginUser,
   logoutUser,
   forgotPassword,
+  subscribeToItinerary,
 };
