@@ -7,6 +7,10 @@ import ItineraryStepServices from "../services/ItineraryStepServices";
 import ItineraryServices from "../services/ItineraryServices";
 import HotelServices from "../services/HotelServices";
 import FlightServices from "../services/FlightServices";
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+
+Vue.use(VueRouter);
 
 const route = useRoute();
 
