@@ -27,7 +27,7 @@ onMounted(async () => {
 function navigateToItineraries() {
   router.push({ name: "itineraries" });
 }
-
+ 
 async function createAccount() {
   await UserServices.addUser(user.value)
     .then(() => {
