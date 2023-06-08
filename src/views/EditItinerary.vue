@@ -254,14 +254,22 @@ function closeEditActivity() {
 
 // FLIGHT FUNCTIONS
 async function getFlights() {
-  if (itinerary.value) {
-    try {
-      const response = await FlightServices.getFlightsForItinerary(itinerary.value.id);
+  await FlightServices.getFlights()
+    .then((response) => {
       flights.value = response.data;
-    } catch (error) {
+    })
+    .catch((error) => {
       console.log(error);
-    }
-  }
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
+//  if (itinerary.value) {
+//    try {
+//      const response = await FlightServices.getFlightsForItinerary(itinerary.value.id);
+//      flights.value = response.data;
+//    } catch (error) {
+//      console.log(error);
 }
 
 
@@ -659,30 +667,31 @@ function closeSnackBar() {
             </v-row>
           </v-card-title>
           <v-card-text>
-            <v-list>
-              <v-list-item v-for="itineraryActivity in itineraryActivities" :key="itineraryActivity.id">
-                <b>{{ itineraryActivity.quantity }} {{ itineraryActivity.activity.unit }}{{ itineraryActivity.quantity > 1 ? 's' : '' }}</b>
-                of {{ itineraryActivity.activity.name }} (${{ itineraryActivity.activity.pricePerUnit }}/{{ itineraryActivity.activity.unit }})
-                <template v-slot:append>
-                  <v-row>
-                    <v-icon
-                      class="mx-2"
-                      size="x-small"
-                      @click="openEditActivity(itineraryActivity)"
-                    >
+            <v-table>
+              <tbody>
+                <tr v-for="activity in activities" :key="activity.id">
+                  <td>{{ activity.name }}</td>
+                  <td>{{ activity.dateTime }}</td>
+                  <td>{{ activity.location }}</td>
+                  <td>{{ activity.description }}</td>
+                  <td>
+                    <v-icon size="x-small" @click="addActivityToItinerary(activity)">
+                      mdi-plus
+                    </v-icon>
+                  </td>
+                  <td>
+                    <v-icon size="x-small" @click="openEditActivity(activity)">
                       mdi-pencil
                     </v-icon>
-                    <v-icon
-                      class="mx-2"
-                      size="x-small"
-                      @click="deleteActivity(itineraryActivity)"
-                    >
+                  </td>
+                  <td>
+                    <v-icon size="x-small" @click="deleteActivity(activity)">
                       mdi-trash-can
                     </v-icon>
-                  </v-row>
-                </template>
-              </v-list-item>
-            </v-list>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
           </v-card-text>
         </v-card>
       </v-col>
@@ -755,26 +764,32 @@ function closeSnackBar() {
             </v-row>
           </v-card-title>
           <v-card-text>
-            <v-list>
-              <v-list-item v-for="flight in flights" :key="flight.id">
-                <v-row>
-                  <v-col>{{ flight.departureDate }}</v-col>
-                  <v-col>{{ flight.arrivalDate }}</v-col>
-                  <v-col>{{ flight.departureLocation }}</v-col>
-                  <v-col>{{ flight.arrivalLocation }}</v-col>
-                  <v-col>
+            <v-table>
+              <tbody>
+                <tr v-for="flight in flights" :key="flight.id">
+                  <td>{{ flight.flightNumber }}</td>
+                  <td>{{ flight.departureLocation }}</td>
+                  <td>{{ flight.departureDateTime }}</td>
+                  <td>{{ flight.arrivalLocation }}</td>
+                  <td>{{ flight.arrivalDateTime }}</td>
+                  <td>
+                    <v-icon size="x-small" @click="addFlightToItinerary(flight)">
+                      mdi-plus
+                    </v-icon>
+                  </td>
+                  <td>
                     <v-icon size="x-small" @click="openEditFlight(flight)">
                       mdi-pencil
                     </v-icon>
-                  </v-col>
-                  <v-col>
+                  </td>
+                  <td>
                     <v-icon size="x-small" @click="deleteFlight(flight)">
                       mdi-trash-can
                     </v-icon>
-                  </v-col>
-                </v-row>
-              </v-list-item>
-            </v-list>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
           </v-card-text>
         </v-card>
       </v-col>
