@@ -82,16 +82,6 @@ async function getItinerary() {
   }
 }
 
-async function getFlights() {
-  if (itinerary.value) {
-    try {
-      const response = await FlightServices.getFlightsForItinerary(itinerary.value.id);
-      flights.value = response.data;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-}
 
 watch(itinerary, async (newVal, oldVal) => {
   if (newVal !== oldVal && newVal !== undefined) {
@@ -115,6 +105,16 @@ async function updateItinerary() {
   await getItinerary();
 }
 
+async function getItinerarySteps() {
+  try {
+    const response = await ItineraryStepServices.getItineraryStepsForItineraryWithActivities(route.params.id);
+    itinerarySteps.value = response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ACTIVITY FUNCTIONS
 async function getActivities() {
   try {
     const response = await ActivityServices.getActivities();
@@ -157,19 +157,6 @@ async function addActivity() {
     snackbar.value.text = error.response.data.message;
   }
   await getItineraryActivities();
-}
-async function getHotels() {
-  if (itinerary.value) {
-    try {
-      const response = await HotelServices.getHotelsForItinerary(itinerary.value.id);
-      hotels.value = response.data.map((hotel) => ({
-        text: hotel.location,
-        value: hotel.id,
-      }));
-    } catch (error) {
-      console.log(error);
-    }
-  }
 }
 
 async function updateActivity() {
@@ -220,13 +207,158 @@ async function checkUpdateActivity() {
   }
 }
 
-async function getItinerarySteps() {
+function openAddActivity() {
+  newActivity.value.id = undefined;
+  newActivity.value.quantity = undefined;
+  newActivity.value.itineraryStepId = undefined;
+  newActivity.value.activityId = undefined;
+  selectedActivity.value = undefined;
+  isAddActivity.value = true;
+}
+
+function openEditActivity(activity) {
+  newActivity.value.id = activity.id;
+  newActivity.value.quantity = activity.quantity;
+  newActivity.value.itineraryStepId = activity.itineraryStepId;
+  newActivity.value.activityId = activity.activityId;
+  selectedActivity.value = activity.activity;
+  isEditActivity.value = true;
+}
+
+function closeAddActivity() {
+  isAddActivity.value = false;
+}
+
+function closeEditActivity() {
+  isEditActivity.value = false;
+}
+
+// FLIGHT FUNCTIONS
+async function getFlights() {
+  if (itinerary.value) {
+    try {
+      const response = await FlightServices.getFlightsForItinerary(itinerary.value.id);
+      flights.value = response.data;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
+
+
+async function deleteFlight(flight) {
   try {
-    const response = await ItineraryStepServices.getItineraryStepsForItineraryWithActivities(route.params.id);
-    itinerarySteps.value = response.data;
+    await FlightServices.deleteFlight(flight);
+    snackbar.value.value = true;
+    snackbar.value.color = "green";
+    snackbar.value.text = `${flight.location} flight deleted successfully!`;
   } catch (error) {
     console.log(error);
+    snackbar.value.value = true;
+    snackbar.value.color = "error";
+    snackbar.value.text = error.response.data.message;
   }
+
+  await getFlights();
+}
+
+async function addFlight() {
+  isAddFlight.value = false;
+  newFlight.value.itineraryId = itinerary.value.id;
+
+  await FlightServices.addFlight(newFlight.value)
+    .then(() => {
+      snackbar.value = {
+        value: true,
+        color: "green",
+        text: "Flight added successfully!",
+      };
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value = {
+        value: true,
+        color: "error",
+        text: error.response.data.message,
+      };
+    });
+
+  await getFlights();
+}
+
+async function updateFlight() {
+  isEditFlight.value = false;
+
+  await FlightServices.updateFlight(newFlight.value)
+    .then(() => {
+      snackbar.value = {
+        value: true,
+        color: "green",
+        text: "Flight updated successfully!",
+      };
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value = {
+        value: true,
+        color: "error",
+        text: error.response.data.message,
+      };
+    });
+
+  await getFlights();
+}
+
+function openAddFlight() {
+  newFlight.value = {
+    departureLocation: undefined,
+    departureDateTime: undefined,
+    arrivalLocation: undefined,
+    arrivalDateTime: undefined,
+    itineraryId: itinerary.value.id,
+  };
+  isAddHotel.value = true;
+}
+
+function openEditFlight(flight) {
+  newFlight.value.id = flight.id;
+  newFlight.value.flightNumber = flight.flightNumber;
+  newFlight.value.departureLocation = flight.departureLocation;
+  newFlight.value.departureDateTime = flight.departureDateTime;
+  newFlight.value.arrivalLocation = flight.arrivalLocation;
+  newFlight.value.arrivalDateTime = flight.arrivalDateTime;
+  newFlight.value.flightId = flight.flightId;
+  selectedFlight.value = flight.flight;
+  isEditFlight.value = true;
+}
+
+function closeAddFlight() {
+  isAddFlight.value = false;
+}
+
+// HOTEL FUNCTIONS
+async function getHotels() {
+  await HotelServices.getHotels()
+    .then((response) => {
+      hotels.value = response.data;
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
+//  if (itinerary.value) {
+//    try {
+//      const response = await HotelServices.getHotelsForItinerary(itinerary.value.id);
+//      hotels.value = response.data.map((hotel) => ({
+//        text: hotel.location,
+//        value: hotel.id,
+//     }));
+//    } catch (error) {
+//      console.log(error);
+//    }
+//  }
 }
 
 async function addHotel() {
@@ -251,27 +383,6 @@ async function addHotel() {
     });
 
   await getHotels();
-}
-
-async function addStep() {
-  isAddStep.value = false;
-  newStep.value.itineraryId = itinerary.value.id;
-  delete newStep.value.id;
-  try {
-    const data = await ItineraryStepServices.addItineraryStep(newStep.value);
-    newStep.value.id = data.data.id;
-    snackbar.value.value = true;
-    snackbar.value.color = "green";
-    snackbar.value.text = `Step added successfully!`;
-  } catch (error) {
-    console.log(error);
-    snackbar.value.value = true;
-    snackbar.value.value.color = "error";
-    snackbar.value.text = error.response.data.message;
-  }
-
-  await checkUpdateActivity();
-  await getItinerarySteps();
 }
 
 async function updateHotel() {
@@ -318,6 +429,54 @@ async function deleteHotel(hotel) {
   await getHotels();
 }
 
+function addHotelToItinerary(selectedHotel) {
+
+}
+
+function openAddHotel() {
+  newHotel.value = {
+    checkInDate: undefined,
+    checkOutDate: undefined,
+    location: undefined,
+    itineraryId: itinerary.value.id,
+  };
+  isAddHotel.value = true;
+}
+
+function openEditHotel(hotel) {
+  newHotel.value.id = hotel.id;
+  newHotel.value.name = hotel.name;
+  newHotel.value.checkInDate = hotel.checkInDate;
+  newHotel.value.checkOutDate = hotel.checkOutDate;
+  newHotel.value.location = hotel.location;
+}
+
+function closeAddHotel() {
+  isAddHotel.value = false;
+}
+
+// STEP FUNCTIONS
+async function addStep() {
+  isAddStep.value = false;
+  newStep.value.itineraryId = itinerary.value.id;
+  delete newStep.value.id;
+  try {
+    const data = await ItineraryStepServices.addItineraryStep(newStep.value);
+    newStep.value.id = data.data.id;
+    snackbar.value.value = true;
+    snackbar.value.color = "green";
+    snackbar.value.text = `Step added successfully!`;
+  } catch (error) {
+    console.log(error);
+    snackbar.value.value = true;
+    snackbar.value.value.color = "error";
+    snackbar.value.text = error.response.data.message;
+  }
+
+  await checkUpdateActivity();
+  await getItinerarySteps();
+}
+
 async function updateStep() {
   isEditStep.value = false;
   try {
@@ -352,46 +511,34 @@ async function deleteStep(step) {
   await getItinerarySteps();
 }
 
-async function deleteFlight(flight) {
-  try {
-    await FlightServices.deleteFlight(flight);
-    snackbar.value.value = true;
-    snackbar.value.color = "green";
-    snackbar.value.text = `${flight.location} flight deleted successfully!`;
-  } catch (error) {
-    console.log(error);
-    snackbar.value.value = true;
-    snackbar.value.color = "error";
-    snackbar.value.text = error.response.data.message;
-  }
-
-  await getFlights();
+function openAddStep() {
+  newStep.value = {
+    checkInDate: undefined,
+    checkOutDate: undefined,
+    location: undefined,
+    itineraryId: itinerary.value.id,
+    itineraryActivity: [],
+  };
+  isAddHotel.value = true; 
 }
 
-async function addFlight() {
-  isAddFlight.value = false;
-  newFlight.value.itineraryId = itinerary.value.id;
-
-  await FlightServices.addFlight(newFlight.value)
-    .then(() => {
-      snackbar.value = {
-        value: true,
-        color: "green",
-        text: "Flight added successfully!",
-      };
-    })
-    .catch((error) => {
-      console.log(error);
-      snackbar.value = {
-        value: true,
-        color: "error",
-        text: error.response.data.message,
-      };
-    });
-
-  await getFlights();
+function openEditStep(step) {
+  newStep.value.id = step.id;
+  newStep.value.stepNumber = step.stepNumber;
+  newStep.value.instruction = step.instruction;
+  newStep.value.itineraryActivity = step.itineraryActivity;
+  isEditStep.value = true;
 }
 
+function closeAddStep() {
+  isAddHotel.value = false;
+}
+
+function closeEditStep() {
+  isEditStep.value = false;
+}
+
+// SUBSCRIBE FUNCTION
 async function subscribe() {
   const email = prompt("Enter your email address:");
   
@@ -419,123 +566,7 @@ async function subscribe() {
   }
 }
 
-async function updateFlight() {
-  isEditFlight.value = false;
-
-  await FlightServices.updateFlight(newFlight.value)
-    .then(() => {
-      snackbar.value = {
-        value: true,
-        color: "green",
-        text: "Flight updated successfully!",
-      };
-    })
-    .catch((error) => {
-      console.log(error);
-      snackbar.value = {
-        value: true,
-        color: "error",
-        text: error.response.data.message,
-      };
-    });
-
-  await getFlights();
-}
-
-function openAddActivity() {
-  newActivity.value.id = undefined;
-  newActivity.value.quantity = undefined;
-  newActivity.value.itineraryStepId = undefined;
-  newActivity.value.activityId = undefined;
-  selectedActivity.value = undefined;
-  isAddActivity.value = true;
-}
-
-function openEditActivity(activity) {
-  newActivity.value.id = activity.id;
-  newActivity.value.quantity = activity.quantity;
-  newActivity.value.itineraryStepId = activity.itineraryStepId;
-  newActivity.value.activityId = activity.activityId;
-  selectedActivity.value = activity.activity;
-  isEditActivity.value = true;
-}
-
-function openAddStep() {
-  newStep.value = {
-    checkInDate: undefined,
-    checkOutDate: undefined,
-    location: undefined,
-    itineraryId: itinerary.value.id,
-    itineraryActivity: [],
-  };
-  isAddHotel.value = true; 
-}
-
-function openEditStep(step) {
-  newStep.value.id = step.id;
-  newStep.value.stepNumber = step.stepNumber;
-  newStep.value.instruction = step.instruction;
-  newStep.value.itineraryActivity = step.itineraryActivity;
-  isEditStep.value = true;
-}
-
-function closeAddActivity() {
-  isAddActivity.value = false;
-}
-
-function closeEditActivity() {
-  isEditActivity.value = false;
-}
-
-function closeAddStep() {
-  isAddHotel.value = false;
-}
-
-function openAddHotel() {
-  newHotel.value = {
-    checkInDate: undefined,
-    checkOutDate: undefined,
-    location: undefined,
-    itineraryId: itinerary.value.id,
-  };
-  isAddHotel.value = true;
-}
-
-function openAddFlight() {
-  newFlight.value = {
-    departureLocation: undefined,
-    departureDateTime: undefined,
-    arrivalLocation: undefined,
-    arrivalDateTime: undefined,
-    itineraryId: itinerary.value.id,
-  };
-  isAddHotel.value = true;
-}
-
-function openEditFlight(flight) {
-  newFlight.value.id = flight.id;
-  newFlight.value.flightNumber = flight.flightNumber;
-  newFlight.value.departureLocation = flight.departureLocation;
-  newFlight.value.departureDateTime = flight.departureDateTime;
-  newFlight.value.arrivalLocation = flight.arrivalLocation;
-  newFlight.value.arrivalDateTime = flight.arrivalDateTime;
-  newFlight.value.flightId = flight.flightId;
-  selectedFlight.value = flight.flight;
-  isEditFlight.value = true;
-}
-
-function closeAddHotel() {
-  isAddHotel.value = false;
-}
-
-function closeAddFlightl() {
-  isAddFlight.value = false;
-}
-
-function closeEditStep() {
-  isEditStep.value = false;
-}
-
+// SNACKBAR FUNCTION
 function closeSnackBar() {
   snackbar.value.value = false;
 }
@@ -812,9 +843,15 @@ function closeSnackBar() {
             <v-table>
               <tbody>
                 <tr v-for="hotel in hotels" :key="hotel.id">
+                  <td>{{ hotel.name }}</td>
                   <td>{{ hotel.checkInDate }}</td>
                   <td>{{ hotel.checkOutDate }}</td>
                   <td>{{ hotel.location }}</td>
+                  <td>
+                    <v-icon size="x-small" @click="addHotelToItinerary(hotel)">
+                      mdi-plus
+                    </v-icon>
+                  </td>
                   <td>
                     <v-icon size="x-small" @click="openEditHotel(hotel)">
                       mdi-pencil
@@ -863,16 +900,16 @@ function closeSnackBar() {
             required
           ></v-text-field>
           <v-select
-            v-model="newHotel.itineraryHotels"
+            v-model="selectedHotel"
             :items="hotels"
             item-text="name"
-            item-value="id"
+            item-value="name"
             label="Hotels"
             return-object
             multiple
             chips
-            required
-          ></v-select>
+          >
+          </v-select>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -895,6 +932,5 @@ function closeSnackBar() {
         </v-card-actions>
       </v-card>
     </v-dialog>
-
   </v-container>
 </template>
