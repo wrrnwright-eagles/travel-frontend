@@ -11,6 +11,7 @@ import ItineraryStepServices from "../services/ItineraryStepServices";
 import ItineraryServices from "../services/ItineraryServices";
 
 
+
 const route = useRoute();
 
 const itinerary = ref({});
@@ -142,22 +143,40 @@ async function getItineraryActivities() {
 
 async function addActivity() {
   isAddActivity.value = false;
+
+  if (!itinerary.value || !selectedActivity.value) {
+    console.error("Either itinerary or selectedActivity is undefined");
+    snackbar.value = {
+      value: true,
+      color: "error",
+      text: "Cannot add activity. Itinerary or selected activity is missing.",
+    };
+    return;
+  }
+  
   newActivity.value.itineraryId = itinerary.value.id;
   newActivity.value.activityId = selectedActivity.value.id;
   delete newActivity.value.id;
+
   try {
     await ItineraryActivityServices.addItineraryActivity(newActivity.value);
-    snackbar.value.value = true;
-    snackbar.value.color = "green";
-    snackbar.value.text = `Activity added successfully!`;
+    snackbar.value = {
+      value: true,
+      color: "green",
+      text: "Activity added successfully!",
+    };
   } catch (error) {
     console.log(error);
-    snackbar.value.value = true;
-    snackbar.value.color = "error";
-    snackbar.value.text = error.response.data.message;
+    snackbar.value = {
+      value: true,
+      color: "error",
+      text: error.response.data.message,
+    };
   }
+
   await getItineraryActivities();
 }
+
 
 async function updateActivity() {
   isEditActivity.value = false;
@@ -317,7 +336,7 @@ function openAddFlight() {
     arrivalDateTime: undefined,
     itineraryId: itinerary.value.id,
   };
-  isAddHotel.value = true;
+  isAddFlight.value = true;
 }
 
 function openEditFlight(flight) {
@@ -565,12 +584,10 @@ async function subscribe() {
     }
   }
 }
-
 // SNACKBAR FUNCTION
 function closeSnackBar() {
   snackbar.value.value = false;
 }
-
 </script>
 
 
