@@ -147,7 +147,7 @@ function closeSnackBar() {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in hotels" :key="item.name">
+          <tr v-for="item in hotels" :key="item.id">
             <td>{{ item.name }}</td>
             <td>{{ item.checkInDate }}</td>
             <td>{{ item.checkOutDate }}</td>

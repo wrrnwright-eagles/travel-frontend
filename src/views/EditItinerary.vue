@@ -3,21 +3,25 @@ import { onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import ActivityServices from "../services/ActivityServices";
 import ItineraryActivityServices from "../services/ItineraryActivityServices";
+import HotelServices from "../services/HotelServices";
+import ItineraryHotelServices from "../services/ItineraryHotelServices";
+import FlightServices from "../services/FlightServices.js";
+import ItineraryFlightServices from "../services/ItineraryFlightServices";
 import ItineraryStepServices from "../services/ItineraryStepServices";
 import ItineraryServices from "../services/ItineraryServices";
-import HotelServices from "../services/HotelServices";
-import FlightServices from "../services/FlightServices";
 
 
 const route = useRoute();
 
 const itinerary = ref({});
 const hotels = ref([]);
+const selectedHotel = ref([]);
 const flights = ref([]);
 const isAddHotel = ref(false);
 const isEditHotel = ref(false);
 const isAddFlight = ref(false); // Added for Flights
 const isEditFlight = ref(false);
+const selectedFlight = ref([]);
 const newHotel = ref({
   checkInDate: undefined,
   checkOutDate: undefined,
@@ -437,6 +441,105 @@ async function updateFlight() {
 
   await getFlights();
 }
+
+function openAddActivity() {
+  newActivity.value.id = undefined;
+  newActivity.value.quantity = undefined;
+  newActivity.value.itineraryStepId = undefined;
+  newActivity.value.activityId = undefined;
+  selectedActivity.value = undefined;
+  isAddActivity.value = true;
+}
+
+function openEditActivity(activity) {
+  newActivity.value.id = activity.id;
+  newActivity.value.quantity = activity.quantity;
+  newActivity.value.itineraryStepId = activity.itineraryStepId;
+  newActivity.value.activityId = activity.activityId;
+  selectedActivity.value = activity.activity;
+  isEditActivity.value = true;
+}
+
+function openAddStep() {
+  newStep.value = {
+    checkInDate: undefined,
+    checkOutDate: undefined,
+    location: undefined,
+    itineraryId: itinerary.value.id,
+    itineraryActivity: [],
+  };
+  isAddHotel.value = true; 
+}
+
+function openEditStep(step) {
+  newStep.value.id = step.id;
+  newStep.value.stepNumber = step.stepNumber;
+  newStep.value.instruction = step.instruction;
+  newStep.value.itineraryActivity = step.itineraryActivity;
+  isEditStep.value = true;
+}
+
+function closeAddActivity() {
+  isAddActivity.value = false;
+}
+
+function closeEditActivity() {
+  isEditActivity.value = false;
+}
+
+function closeAddStep() {
+  isAddHotel.value = false;
+}
+
+function openAddHotel() {
+  newHotel.value = {
+    checkInDate: undefined,
+    checkOutDate: undefined,
+    location: undefined,
+    itineraryId: itinerary.value.id,
+  };
+  isAddHotel.value = true;
+}
+
+function openAddFlight() {
+  newFlight.value = {
+    departureLocation: undefined,
+    departureDateTime: undefined,
+    arrivalLocation: undefined,
+    arrivalDateTime: undefined,
+    itineraryId: itinerary.value.id,
+  };
+  isAddHotel.value = true;
+}
+
+function openEditFlight(flight) {
+  newFlight.value.id = flight.id;
+  newFlight.value.flightNumber = flight.flightNumber;
+  newFlight.value.departureLocation = flight.departureLocation;
+  newFlight.value.departureDateTime = flight.departureDateTime;
+  newFlight.value.arrivalLocation = flight.arrivalLocation;
+  newFlight.value.arrivalDateTime = flight.arrivalDateTime;
+  newFlight.value.flightId = flight.flightId;
+  selectedFlight.value = flight.flight;
+  isEditFlight.value = true;
+}
+
+function closeAddHotel() {
+  isAddHotel.value = false;
+}
+
+function closeAddFlightl() {
+  isAddFlight.value = false;
+}
+
+function closeEditStep() {
+  isEditStep.value = false;
+}
+
+function closeSnackBar() {
+  snackbar.value.value = false;
+}
+
 </script>
 
 
@@ -503,7 +606,7 @@ async function updateFlight() {
                 <v-card-title class="headline">Activities</v-card-title>
               </v-col>
               <v-col class="d-flex justify-end" cols="2">
-                <v-btn color="accent" @click="openAddActivity">Add</v-btn>
+                <v-btn color="accent" @click="openAddActivity">Add Activity</v-btn>
               </v-col>
             </v-row>
           </v-card-title>
@@ -536,6 +639,60 @@ async function updateFlight() {
         </v-card>
       </v-col>
     </v-row>
+
+    <v-dialog persistent :model-value="isAddActivity || isEditActivity" width="800">
+      <v-card class="rounded-lg elevation-5">
+        <v-card-title class="headline mb-2">
+          {{ isAddActivity ? "Add Activity" : isEditActivity ? "Edit Activity" : "" }}
+        </v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="newActivity.name"
+            label="name"
+            required
+          ></v-text-field>
+
+          <v-text-field
+            v-model="newActivity.dateTime"
+            label="Date & Time"
+            type="date"
+            required
+          ></v-text-field>
+
+          <v-text-field
+            v-model="newActivity.location"
+            label="Activity Location"
+            required
+          ></v-text-field>
+
+          <v-text-field
+            v-model="newActivity.description"
+            label="Description"
+            required
+          ></v-text-field>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            variant="outlined"
+            color="secondary"
+            @click="isAddActivity ? closeAddActivity() : isEditActivity ? closeEditActivity() : false"
+          >
+            Close
+          </v-btn>
+          <v-btn
+            variant="outlined"
+            color="primary"
+            @click="isAddActivity ? addActivity() : isEditActivity ? updateActivity() : false"
+          >
+            {{
+              isAddActivity ? "Add Activity" : isEditActivity ? "Update Activity" : ""
+            }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-row>
       <v-col>
         <v-card class="rounded-lg elevation-5">
