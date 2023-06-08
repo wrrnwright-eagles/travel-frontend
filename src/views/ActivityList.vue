@@ -4,6 +4,7 @@ import { ref } from "vue";
 import ActivityServices from "../services/ActivityServices.js";
 
 const activities = ref([]);
+const name = ref([]);
 const dateTime = ref([]);
 const location = ref([]);
 const description = ref([]);
