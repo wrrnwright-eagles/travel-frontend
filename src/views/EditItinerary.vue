@@ -63,22 +63,6 @@ const newActivity = ref({
   activityId: undefined,
 });
 
-async function handleApiRequest(apiCall, onSuccess, onError) {
-  try {
-    const response = await apiCall();
-    onSuccess(response);
-    snackbar.value = { value: true, color: "green", text: `Operation was successful!` };
-  } catch (error) {
-    console.log(error);
-    snackbar.value = {
-      value: true,
-      color: "error",
-      text: error.response?.data?.message || 'An error occurred!',
-    };
-    onError && onError(error);
-  }
-}
-
 onMounted(async () => {
   await getItinerary();
   await getItineraryActivities();
@@ -101,11 +85,8 @@ async function getItinerary() {
 async function getFlights() {
   if (itinerary.value) {
     try {
-      const response = await FlightServices.getFliightsForItinerary(itinerary.value.id);
-      hotels.value = response.data.map((flight) => ({
-        text: flight.arrivallocation,
-        value: flight.id,
-      }));
+      const response = await FlightServices.getFlightsForItinerary(itinerary.value.id);
+      flights.value = response.data;
     } catch (error) {
       console.log(error);
     }
@@ -371,7 +352,23 @@ async function deleteStep(step) {
   await getItinerarySteps();
 }
 
-async function addFlight() { 
+async function deleteFlight(flight) {
+  try {
+    await FlightServices.deleteFlight(flight);
+    snackbar.value.value = true;
+    snackbar.value.color = "green";
+    snackbar.value.text = `${flight.location} flight deleted successfully!`;
+  } catch (error) {
+    console.log(error);
+    snackbar.value.value = true;
+    snackbar.value.color = "error";
+    snackbar.value.text = error.response.data.message;
+  }
+
+  await getFlights();
+}
+
+async function addFlight() {
   isAddFlight.value = false;
   newFlight.value.itineraryId = itinerary.value.id;
 
@@ -395,7 +392,34 @@ async function addFlight() {
   await getFlights();
 }
 
-async function updateFlight() { 
+async function subscribe() {
+  const email = prompt("Enter your email address:");
+  
+  if (email) {
+    try {
+      // Make an API call to subscribe the user
+      const response = await MySubscriptionService.subscribe(email);
+
+      // Display a success message in the snackbar
+      snackbar.value = {
+        value: true,
+        color: "green",
+        text: response.data.message || "Subscribed successfully!",
+      };
+    } catch (error) {
+      console.log(error);
+
+      // Display an error message in the snackbar
+      snackbar.value = {
+        value: true,
+        color: "error",
+        text: error.response?.data?.message || "Failed to subscribe!",
+      };
+    }
+  }
+}
+
+async function updateFlight() {
   isEditFlight.value = false;
 
   await FlightServices.updateFlight(newFlight.value)
@@ -408,26 +432,6 @@ async function updateFlight() {
     })
     .catch((error) => {
       console.log(error);
-      snackbar.value = {
-        value: true,
-        color: "error",
-        text: error.response.data.message,
-      };
-    });
-
-  await getFlights();
-}
-
-async function deleteFlight(flight) { 
-  await FlightServices.deleteFlight(flight)
-    .then(() => {
-      snackbar.value = {
-        value: true,
-        color: "green",
-        text: "Flight deleted successfully!",
-      };
-    })
-    .catch((error) => {console.log(error);
       snackbar.value = {
         value: true,
         color: "error",
@@ -538,6 +542,7 @@ function closeSnackBar() {
 
 </script>
 
+
 <template>
   <v-container>
     <v-row align="center">
@@ -564,9 +569,8 @@ function closeSnackBar() {
                   required
                 ></v-text-field>
                 <v-text-field
-                  v-model.number="itinerary.time"
-                  label="Time"
-                  type="number"
+                  v-model.number="itinerary.location"
+                  label="Location"
                 ></v-text-field>
                 <v-switch
                   v-model="itinerary.isPublished"
@@ -703,26 +707,26 @@ function closeSnackBar() {
             </v-row>
           </v-card-title>
           <v-card-text>
-            <v-table>
-              <tbody>
-                <tr v-for="flight in flights" :key="flight.id">
-                  <td>{{ flight.departureDate }}</td>
-                  <td>{{ flight.arrivalDate }}</td>
-                  <td>{{ flight.departureLocation }}</td>
-                  <td>{{ flight.arrivalLocation }}</td>
-                  <td>
+            <v-list>
+              <v-list-item v-for="flight in flights" :key="flight.id">
+                <v-row>
+                  <v-col>{{ flight.departureDate }}</v-col>
+                  <v-col>{{ flight.arrivalDate }}</v-col>
+                  <v-col>{{ flight.departureLocation }}</v-col>
+                  <v-col>{{ flight.arrivalLocation }}</v-col>
+                  <v-col>
                     <v-icon size="x-small" @click="openEditFlight(flight)">
                       mdi-pencil
                     </v-icon>
-                  </td>
-                  <td>
+                  </v-col>
+                  <v-col>
                     <v-icon size="x-small" @click="deleteFlight(flight)">
                       mdi-trash-can
                     </v-icon>
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
+                  </v-col>
+                </v-row>
+              </v-list-item>
+            </v-list>
           </v-card-text>
         </v-card>
       </v-col>
@@ -734,31 +738,40 @@ function closeSnackBar() {
           {{ isAddFlight ? "Add Flight" : isEditFlight ? "Edit Flight" : "" }}
         </v-card-title>
         <v-card-text>
-          <v-text-field
-            v-model="newFlight.departureDate"
-            label="Departure Date"
-            type="date"
-            required
-          ></v-text-field>
-
-          <v-text-field
-            v-model="newFlight.arrivalDate"
-            label="Arrival Date"
-            type="date"
-            required
-          ></v-text-field>
-
-          <v-text-field
-            v-model="newFlight.departureLocation"
-            label="Departure Location"
-            required
-          ></v-text-field>
-
-          <v-text-field
-            v-model="newFlight.arrivalLocation"
-            label="Arrival Location"
-            required
-          ></v-text-field>
+          <v-row>
+            <v-col cols="6">
+              <v-text-field
+                v-model="newFlight.departureDate"
+                label="Departure Date"
+                type="date"
+                required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6">
+              <v-text-field
+                v-model="newFlight.arrivalDate"
+                label="Arrival Date"
+                type="date"
+                required
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="6">
+              <v-text-field
+                v-model="newFlight.departureLocation"
+                label="Departure Location"
+                required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6">
+              <v-text-field
+                v-model="newFlight.arrivalLocation"
+                label="Arrival Location"
+                required
+              ></v-text-field>
+            </v-col>
+          </v-row>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -826,28 +839,31 @@ function closeSnackBar() {
           {{ isAddHotel ? "Add Hotel" : isEditHotel ? "Edit Hotel" : "" }}
         </v-card-title>
         <v-card-text>
+          <v-row>
+            <v-col cols="6">
+              <v-text-field
+                v-model="newHotel.checkInDate"
+                label="Check-in Date"
+                type="date"
+                required
+              ></v-text-field>
+            </v-col>
+            <v-col cols="6">
+              <v-text-field
+                v-model="newHotel.checkOutDate"
+                label="Check-out Date"
+                type="date"
+                required
+              ></v-text-field>
+            </v-col>
+          </v-row>
           <v-text-field
-            v-model="newStep.checkInDate"
-            label="Check-in Date"
-            type="date"
-            required
-          ></v-text-field>
-
-          <v-text-field
-            v-model="newStep.checkOutDate"
-            label="Check-out Date"
-            type="date"
-            required
-          ></v-text-field>
-
-          <v-text-field
-            v-model="newStep.location"
+            v-model="newHotel.location"
             label="Location"
             required
           ></v-text-field>
-
           <v-select
-            v-model="newStep.itineraryHotels"
+            v-model="newHotel.itineraryHotels"
             :items="hotels"
             item-text="name"
             item-value="id"
@@ -880,14 +896,5 @@ function closeSnackBar() {
       </v-card>
     </v-dialog>
 
-    <v-snackbar v-model="snackbar.value" rounded="pill">
-      {{ snackbar.text }}
-
-      <template v-slot:actions>
-        <v-btn :color="snackbar.color" text @click="closeSnackBar">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
   </v-container>
 </template>

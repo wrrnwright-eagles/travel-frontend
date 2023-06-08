@@ -29,9 +29,15 @@ const apiClient = axios.create({
     return JSON.stringify(data);
   },
   transformResponse: function (data) {
-    data = JSON.parse(data);
-    if (!data.success && data.code == "expired-session") {
-      localStorage.removeItem("user");
+    try {
+      data = JSON.parse(data);
+      if (!data.success && data.code === "expired-session") {
+        localStorage.removeItem("user");
+      }
+    } catch (error) {
+      console.error("Could not parse response as JSON", error);
+      // Optionally, set data to a safe default if JSON parsing fails
+      data = {};
     }
     return data;
   },
