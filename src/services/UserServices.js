@@ -30,8 +30,11 @@ async function forgotPassword(email) {
   return apiClient.post("forgot-password", { email });
 }
 
-async function subscribeToItinerary(userId, itineraryId) {
-  return apiClient.post('subscribe', { userId, itineraryId });
+async function subscribeToItinerary(email, itineraryId) {
+  const payload = {
+    email: email,
+    itineraryId: itineraryId,
+  };
 }
 
 export default {
