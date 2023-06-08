@@ -4,6 +4,7 @@ import { ref } from "vue";
 import FlightServices from "../services/FlightServices.js";
 
 const flights = ref([]);
+const flightNumber = ref([]);
 const departureLocation = ref([]);
 const departureDateTime = ref([]);
 const arrivalLocation = ref([]);
