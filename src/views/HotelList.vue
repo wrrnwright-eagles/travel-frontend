@@ -4,6 +4,7 @@ import { ref } from "vue";
 import HotelServices from "../services/HotelServices.js";
 
 const hotels = ref([]);
+const name = ref([]);
 const checkInDate = ref([]);
 const checkOutDate = ref([]);
 const location = ref([]);
@@ -151,7 +152,7 @@ function closeSnackBar() {
             <td>{{ item.name }}</td>
             <td>{{ item.checkInDate }}</td>
             <td>{{ item.checkOutDate }}</td>
-            <td>${{ item.location }}</td>
+            <td>{{ item.location }}</td>
             <td>
               <v-icon
                 size="small"
@@ -178,6 +179,7 @@ function closeSnackBar() {
           <v-card-text>
             <v-text-field
               v-model="newHotel.name"
+              :item="name"
               label="Name"
               required
             ></v-text-field>
