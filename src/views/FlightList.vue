@@ -220,7 +220,7 @@ function closeSnackBar() {
             <v-btn
               variant="flat"
               color="secondary"
-              @click="isAdd ? closeAddFlight() : isEdit ? closeEditFlight() : false"
+              @click="isAdd ? closeAdd() : isEdit ? closeEdit() : false"
               >Close</v-btn
               >
             <v-btn
