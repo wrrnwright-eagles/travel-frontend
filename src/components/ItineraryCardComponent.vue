@@ -67,7 +67,7 @@ async function handleSubscribe() {
       await UserServices.subscribeToItinerary(user.value, props.itinerary.id);
       console.log('Subscribed to Itinerary!');
       snackbarMessage.value = 'Subscribed to Itinerary!';
-    }
+    } 
     // Toggle the subscription state
     isSubscribed.value = !isSubscribed.value;
     snackbar.value = true;
