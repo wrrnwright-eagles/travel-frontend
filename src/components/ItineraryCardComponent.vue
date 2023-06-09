@@ -124,64 +124,61 @@ defineExpose({ handleSubscribe, snackbar, snackbarMessage, isSubscribed });
     </v-card-text>
     <v-expand-transition>
       <v-card-text class="pt-0" v-show="showDetails">
-        <h3>Activities</h3>
+        <h3>Activities</h3> <!-- All this needs to be fixed to display activities-->
         <v-list>
           <v-list-item
             v-for="itineraryActivity in itineraryActivities"
             :key="itineraryActivity.id"
           >
-            <b>
-              {{ itineraryActivity.activity.name }}
+            <b
+              >{{ itineraryActivity.activity.name }} 
               {{
                 `${itineraryActivity.activity.unit}${
                   itineraryActivity.quantity > 1 ? "s" : ""
                 }`
-              }}
-            </b>
-            of {{ itineraryActivity.activity.name }}
-            (${{ itineraryActivity.activity.pricePerUnit }}/{{
-              itineraryActivity.activity.unit
-            }})
+              }}</b
+            >
+            of {{ itineraryActivity.activity.name }} (${{
+              itineraryActivity.activity.pricePerUnit
+            }}/{{ itineraryActivity.activity.unit }})
           </v-list-item>
         </v-list>
-        <h3>Flights</h3>
+        <h3>Flights</h3> <!-- All this needs to be fixed to display flights-->
         <v-list>
           <v-list-item
             v-for="itineraryFlights in itineraryFlights"
             :key="itineraryFlight.id"
           >
-            <b>
-              {{ itineraryActivity.quantity }}
+            <b
+              >{{ itineraryActivity.quantity }} 
               {{
                 `${itineraryActivity.activity.unit}${
                   itineraryActivity.quantity > 1 ? "s" : ""
                 }`
-              }}
-            </b>
-            of {{ itineraryActivity.activity.name }}
-            (${{ itineraryActivity.activity.pricePerUnit }}/{{
-              itineraryActivity.activity.unit
-            }})
+              }}</b
+            >
+            of {{ itineraryActivity.activity.name }} (${{
+              itineraryActivity.activity.pricePerUnit
+            }}/{{ itineraryActivity.activity.unit }})
           </v-list-item>
         </v-list>
-        <h3>Hotels</h3>
+        <h3>Hotels</h3> <!-- All this needs to be fixed to display hotels-->
         <v-list>
           <v-list-item
             v-for="itineraryFlights in itineraryFlights"
             :key="itineraryFlight.id"
           >
-            <b>
-              {{ itineraryActivity.quantity }}
+            <b
+              >{{ itineraryActivity.quantity }} 
               {{
                 `${itineraryActivity.activity.unit}${
                   itineraryActivity.quantity > 1 ? "s" : ""
                 }`
-              }}
-            </b>
-            of {{ itineraryActivity.activity.name }}
-            (${{ itineraryActivity.activity.pricePerUnit }}/{{
-              itineraryActivity.activity.unit
-            }})
+              }}</b
+            >
+            of {{ itineraryActivity.activity.name }} (${{
+              itineraryActivity.activity.pricePerUnit
+            }}/{{ itineraryActivity.activity.unit }})
           </v-list-item>
         </v-list>
         <h3>Trip Details</h3>
@@ -203,9 +200,8 @@ defineExpose({ handleSubscribe, snackbar, snackbarMessage, isSubscribed });
                   v-for="activity in step.itineraryActivity"
                   :key="activity.id"
                   pill
+                >{{ activity.activity.name }}</v-chip
                 >
-                  {{ activity.activity.name }}
-                </v-chip>
               </td>
             </tr>
           </tbody>
@@ -213,4 +209,14 @@ defineExpose({ handleSubscribe, snackbar, snackbarMessage, isSubscribed });
       </v-card-text>
     </v-expand-transition>
   </v-card>
+  
+  <!-- Snackbar -->
+  <v-snackbar
+    v-model="snackbar"
+    :color="isSubscribed ? 'success' : 'error'"
+    top
+  >
+    {{ snackbarMessage }}
+    <v-btn color="white" text @click="snackbar = false">Close</v-btn>
+  </v-snackbar>
 </template>
