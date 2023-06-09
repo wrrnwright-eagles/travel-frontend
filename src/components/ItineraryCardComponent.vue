@@ -7,16 +7,16 @@ import ItineraryFlightServices from "../services/ItineraryFlightServices.js";
 import ItineraryStepServices from "../services/ItineraryStepServices";
 import UserServices from "../services/UserServices.js";
 
-
+const snackbar = ref(false);
+const snackbarMessage = ref("");
 const router = useRouter();
-
 const showDetails = ref(false);
 const itineraryActivities = ref([]);
 const itineraryHotels = ref([]);
 const itineraryFlights = ref([]);
 const itinerarySteps = ref([]);
 const user = ref(null);
-
+const isSubscribed = ref(false);
 const props = defineProps({
   itinerary: {
     required: true,
@@ -59,15 +59,27 @@ function navigateToEdit() {
 
 async function handleSubscribe() {
   try {
-    await UserServices.subscribeToItinerary(user.value, props.itinerary.id);
-    console.log('Subscribed to Itinerary!');
+    if (isSubscribed.value) {
+      // await UserServices.unsubscribeFromItinerary(user.value, props.itinerary.id);
+      console.log('Unsubscribed from Itinerary!');
+      snackbarMessage.value = 'Unsubscribed from Itinerary!';
+    } else {
+      await UserServices.subscribeToItinerary(user.value, props.itinerary.id);
+      console.log('Subscribed to Itinerary!');
+      snackbarMessage.value = 'Subscribed to Itinerary!';
+    }
+    // Toggle the subscription state
+    isSubscribed.value = !isSubscribed.value;
+    snackbar.value = true;
   } catch (error) {
     console.error(error);
+    snackbarMessage.value = 'Failed to update subscription.';
+    snackbar.value = true;
   }
 }
+defineExpose({ handleSubscribe, snackbar, snackbarMessage, isSubscribed });
 
-// Expose handleSubscribe to the template
-defineExpose({ handleSubscribe });
+
 
 </script>
 
@@ -76,98 +88,100 @@ defineExpose({ handleSubscribe });
     class="rounded-lg elevation-5 mb-8"
     @click="showDetails = !showDetails"
   >
-  <v-card-title class="headline">
-  <v-row align="center">
-    <v-col cols="10">
-      {{ itinerary && itinerary.name }}
-      <v-chip class="ma-2" color="primary" label>
-        <v-icon start icon="mdi-account-circle-outline"></v-icon>
-        {{ itinerary && itinerary.subscribers }} Subscribers
-      </v-chip>
-      <v-chip class="ma-2" color="accent" label>
-        <v-icon start icon="mdi-clock-outline"></v-icon>
-        {{ itinerary && itinerary.location }} Location
-      </v-chip>
-    </v-col>
-    <v-col class="d-flex flex-column align-end">
-      <v-icon
-        v-if="user !== null"
-        size="small"
-        icon="mdi-pencil"
-        @click.stop="navigateToEdit()"
-      ></v-icon>
-      <!-- New subscribe button with mt-2 class for margin-top -->
-      <v-btn
-        v-if="user !== null"
-        color="primary"
-        @click.stop="handleSubscribe()"
-        class="mt-2"
-      >
-        Subscribe
-      </v-btn>
-    </v-col>
-  </v-row>
-</v-card-title>
+    <v-card-title class="headline">
+      <v-row align="center">
+        <v-col cols="10">
+          {{ itinerary && itinerary.name }}
+          <v-chip class="ma-2" color="primary" label>
+            <v-icon start icon="mdi-account-circle-outline"></v-icon>
+            {{ itinerary && itinerary.subscribers }} Subscribers
+          </v-chip>
+          <v-chip class="ma-2" color="accent" label>
+            <v-icon start icon="mdi-clock-outline"></v-icon>
+            {{ itinerary && itinerary.location }} Location
+          </v-chip>
+        </v-col>
+        <v-col class="d-flex flex-column align-end">
+          <v-icon
+            v-if="user !== null"
+            size="small"
+            icon="mdi-pencil"
+            @click.stop="navigateToEdit()"
+          ></v-icon>
+          <v-btn
+            v-if="user !== null"
+            color="primary"
+            @click.stop="handleSubscribe()"
+            class="mt-2"
+          >
+            {{ isSubscribed ? 'Unsubscribe' : 'Subscribe' }}
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-card-title>
     <v-card-text class="body-1">
       {{ itinerary && itinerary.description }}
     </v-card-text>
     <v-expand-transition>
       <v-card-text class="pt-0" v-show="showDetails">
-        <h3>Activities</h3> <!-- All this needs to be fixed to display activities-->
+        <h3>Activities</h3>
         <v-list>
           <v-list-item
             v-for="itineraryActivity in itineraryActivities"
             :key="itineraryActivity.id"
           >
-            <b
-              >{{ itineraryActivity.activity.name }} 
+            <b>
+              {{ itineraryActivity.activity.name }}
               {{
                 `${itineraryActivity.activity.unit}${
                   itineraryActivity.quantity > 1 ? "s" : ""
                 }`
-              }}</b
-            >
-            of {{ itineraryActivity.activity.name }} (${{
-              itineraryActivity.activity.pricePerUnit
-            }}/{{ itineraryActivity.activity.unit }})
+              }}
+            </b>
+            of {{ itineraryActivity.activity.name }}
+            (${{ itineraryActivity.activity.pricePerUnit }}/{{
+              itineraryActivity.activity.unit
+            }})
           </v-list-item>
         </v-list>
-        <h3>Flights</h3> <!-- All this needs to be fixed to display flights-->
+        <h3>Flights</h3>
         <v-list>
           <v-list-item
-          v-for="itineraryFlights in itineraryFlights"
+            v-for="itineraryFlights in itineraryFlights"
             :key="itineraryFlight.id"
           >
-            <b
-              >{{ itineraryActivity.quantity }} 
+            <b>
+              {{ itineraryActivity.quantity }}
               {{
                 `${itineraryActivity.activity.unit}${
                   itineraryActivity.quantity > 1 ? "s" : ""
                 }`
-              }}</b
-            >
-            of {{ itineraryActivity.activity.name }} (${{
-              itineraryActivity.activity.pricePerUnit
-            }}/{{ itineraryActivity.activity.unit }})
+              }}
+            </b>
+            of {{ itineraryActivity.activity.name }}
+            (${{ itineraryActivity.activity.pricePerUnit }}/{{
+              itineraryActivity.activity.unit
+            }})
           </v-list-item>
         </v-list>
-        <h3>Hotels</h3> <!-- All this needs to be fixed to display hotels-->
+        <h3>Hotels</h3>
         <v-list>
           <v-list-item
-          v-for="itineraryFlights in itineraryFlights"
+            v-for="itineraryFlights in itineraryFlights"
             :key="itineraryFlight.id"
           >
-            <b
-              >{{ itineraryActivity.quantity }} 
+            <b>
+              {{ itineraryActivity.quantity }}
               {{
                 `${itineraryActivity.activity.unit}${
                   itineraryActivity.quantity > 1 ? "s" : ""
                 }`
-              }}</b
-            >
-            of {{ itineraryActivity.activity.name }} (${{
-              itineraryActivity.activity.pricePerUnit
-            }}/{{ itineraryActivity.activity.unit }})
+              }}
+            </b>
+            of {{ itineraryActivity.activity.name }}
+            (${{ itineraryActivity.activity.pricePerUnit }}/{{
+              itineraryActivity.activity.unit
+            }})
           </v-list-item>
         </v-list>
         <h3>Trip Details</h3>
@@ -189,8 +203,9 @@ defineExpose({ handleSubscribe });
                   v-for="activity in step.itineraryActivity"
                   :key="activity.id"
                   pill
-                  >{{ activity.activity.name }}</v-chip
                 >
+                  {{ activity.activity.name }}
+                </v-chip>
               </td>
             </tr>
           </tbody>
