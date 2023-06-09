@@ -15,48 +15,42 @@ import ItineraryServices from "../services/ItineraryServices";
 const route = useRoute();
 
 const itinerary = ref({});
-const hotels = ref([]);
-const selectedHotel = ref([]);
+const activities = ref([]);
+const selectedActivity = ref({});
+const itineraryActivity = ref([]);
+const isAddActivity = ref(false);
+const isEditActivity = ref(false);
 const flights = ref([]);
-const isAddHotel = ref(false);
-const isEditHotel = ref(false);
+const selectedFlight = ref({});
+const itineraryFlight = ref([]);
 const isAddFlight = ref(false); // Added for Flights
 const isEditFlight = ref(false);
-const selectedFlight = ref([]);
-const newHotel = ref({
-  checkInDate: undefined,
-  checkOutDate: undefined,
-  location: undefined,
+const hotels = ref([]);
+const selectedHotel = ref({});
+const itineraryHotel = ref([]);
+const isAddHotel = ref(false);
+const isEditHotel = ref(false);
+const itinerarySteps = ref([]);
+const isAddStep = ref(false);
+const isEditStep = ref(false);
+
+const newHotel = ref({ // Added for Hotels
+  id: undefined,
+  quantity: undefined,
   itineraryId: undefined,
+  itineraryStepId: undefined,
+  hotelId: undefined
 });
 
 const newFlight = ref({ // Added for Flights
-  departureDate: undefined,
-  arrivalDate: undefined,
-  location: undefined,
-  itineraryId: undefined,
-});
-const activities = ref([]);
-const selectedActivity = ref({});
-const itineraryActivities = ref([]);
-const itinerarySteps = ref([]);
-const isAddActivity = ref(false);
-const isEditActivity = ref(false);
-const isAddStep = ref(false);
-const isEditStep = ref(false);
-const snackbar = ref({
-  value: false,
-  color: "",
-  text: "",
-});
-const newStep = ref({
   id: undefined,
-  stepNumber: undefined,
-  instruction: undefined,
+  quantity: undefined,
   itineraryId: undefined,
-  itineraryActivity: [],
+  itineraryStepId: undefined,
+  itineraryId: undefined,
 });
-const newActivity = ref({
+
+const newActivity = ref({ // Added for Activities
   id: undefined,
   quantity: undefined,
   itineraryId: undefined,
@@ -64,13 +58,30 @@ const newActivity = ref({
   activityId: undefined,
 });
 
+const newStep = ref({
+  id: undefined,
+  stepNumber: undefined,
+  itineraryId: undefined,
+  itineraryActivity: [],
+  itineraryFlight: [],
+  itineraryHotel: []
+});
+
+const snackbar = ref({
+  value: false,
+  color: "",
+  text: "",
+});
+
 onMounted(async () => {
   await getItinerary();
-  await getItineraryActivities();
   await getActivities();
-  await getItinerarySteps();
-  await getHotels();
   await getFlights();
+  await getHotels();
+  await getItineraryActivities();
+  await getItineraryFlights();
+  await getItineraryHotels();
+  await getItinerarySteps();
 });
 
 async function getItinerary() {
@@ -108,8 +119,12 @@ async function updateItinerary() {
 
 async function getItinerarySteps() {
   try {
-    const response = await ItineraryStepServices.getItineraryStepsForItineraryWithActivities(route.params.id);
-    itinerarySteps.value = response.data;
+    const responseA = await ItineraryStepServices.getItineraryStepsForItineraryWithActivities(route.params.id);
+    itinerarySteps.value = responseA.data;
+    const responseF = await ItineraryStepServices.getItineraryStepsForItineraryWithFlights(route.params.id);
+    itinerarySteps.value = responseF.data;
+    const responseH = await ItineraryStepServices.getItineraryStepsForItineraryWithHotels(route.params.id);
+    itinerarySteps.value = responseH.data;
   } catch (error) {
     console.log(error);
   }
@@ -129,16 +144,13 @@ async function getActivities() {
 }
 
 async function getItineraryActivities() {
-  console.log(itinerary.value);
-  if (itinerary.value) {
-    try {
-      const response = await ItineraryActivityServices.getItineraryActivitiesForItinerary(itinerary.value.id);
-      console.log(response.data);
-      itineraryActivities.value = response.data;
-    } catch (error) {
+  await ItineraryActivityServices.getItineraryActivitiesForItinerary(route.params.id)
+    .then((response) => {
+      itineraryActivity.value = response.data;
+    })
+    .catch((error) => {
       console.log(error);
-    }
-  }
+    });
 }
 
 async function addActivity() {
@@ -264,13 +276,13 @@ async function getFlights() {
       snackbar.value.color = "error";
       snackbar.value.text = error.response.data.message;
     });
+}
 //  if (itinerary.value) {
 //    try {
 //      const response = await FlightServices.getFlightsForItinerary(itinerary.value.id);
 //      flights.value = response.data;
 //    } catch (error) {
 //      console.log(error);
-}
 
 
 async function deleteFlight(flight) {
@@ -287,6 +299,19 @@ async function deleteFlight(flight) {
   }
 
   await getFlights();
+}
+
+async function checkUpdateFlight() {
+  if (newStep.value.itineraryFlight.length > 0) {
+    console.log(newStep.value.itineraryFlight);
+    for (let i = 0; i < newStep.value.itineraryFlight.length; i++) {
+      newFlight.value.id = newStep.value.itineraryFlight[i].id;
+      newFlight.value.quantity = newStep.value.itineraryFlight[i].quantity;
+      newFlight.value.itineraryStepId = newStep.value.id;
+      selectedFlight.value.id = newStep.value.itineraryFlight[i].flightId;
+      await updateFlight();
+    }
+  }
 }
 
 async function addFlight() {
@@ -336,6 +361,16 @@ async function updateFlight() {
   await getFlights();
 }
 
+async function getItineraryFlights() {
+  await ItineraryFlightServices.getItineraryFlightsForItinerary(route.params.id)
+    .then((response) => {
+      itineraryFlight.value = response.data;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
 function openAddFlight() {
   newFlight.value = {
     departureLocation: undefined,
@@ -361,6 +396,10 @@ function openEditFlight(flight) {
 
 function closeAddFlight() {
   isAddFlight.value = false;
+}
+
+function addFlightToItinerary(flight) {
+
 }
 
 // HOTEL FUNCTIONS
@@ -391,13 +430,14 @@ async function getHotels() {
 async function addHotel() {
   isAddHotel.value = false;
   newHotel.value.itineraryId = itinerary.value.id;
-
-  await HotelServices.addHotel(newHotel.value)
+  newHotel.value.hotelId = selectedHotel.value.id;
+  delete newHotel.value.id;
+  await ItineraryHotelServices.addItineraryHotel(newHotel.value)
     .then(() => {
       snackbar.value = {
         value: true,
         color: "green",
-        text: "Hotel added successfully!",
+        text: "Hotel added to Itinerary successfully!",
       };
     })
     .catch((error) => {
@@ -409,7 +449,7 @@ async function addHotel() {
       };
     });
 
-  await getHotels();
+  await getItineraryHotels();
 }
 
 async function updateHotel() {
@@ -456,8 +496,27 @@ async function deleteHotel(hotel) {
   await getHotels();
 }
 
-function addHotelToItinerary(selectedHotel) {
+async function checkUpdateHotel() {
+  if (newStep.value.itineraryHotel.length > 0) {
+    console.log(newStep.value.itineraryHotel);
+    for (let i = 0; i < newStep.value.itineraryHotel.length; i++) {
+      newHotel.value.id = newStep.value.itineraryHotel[i].id;
+      newHotel.value.quantity = newStep.value.itineraryHotel[i].quantity;
+      newHotel.value.itineraryStepId = newStep.value.id;
+      selectedHotel.value.id = newStep.value.itineraryHotel[i].hotelId;
+      await updateHotel();
+    }
+  }
+}
 
+async function getItineraryHotels() {
+  await ItineraryHotelServices.getItineraryHotelsForItinerary(route.params.id)
+    .then((response) => {
+      itineraryHotel.value = response.data;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 }
 
 function openAddHotel() {
@@ -499,8 +558,30 @@ async function addStep() {
     snackbar.value.value.color = "error";
     snackbar.value.text = error.response.data.message;
   }
-
-  await checkUpdateActivity();
+  try {
+    await checkUpdateActivity();
+  } catch (error) {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    }
+  try {
+  await checkUpdateFlight();
+  } catch (error) {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    }
+  try {
+  await checkUpdateHotel();
+  } catch (error) {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    }
   await getItinerarySteps();
 }
 
@@ -518,7 +599,30 @@ async function updateStep() {
     snackbar.value.text = error.response.data.message;
   }
 
-  await checkUpdateActivity();
+  try {
+    await checkUpdateActivity();
+  } catch (error) {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    }
+  try {
+  await checkUpdateFlight();
+  } catch (error) {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    }
+  try {
+  await checkUpdateHotel();
+  } catch (error) {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    }
   await getItinerarySteps();
 }
 
@@ -539,26 +643,25 @@ async function deleteStep(step) {
 }
 
 function openAddStep() {
-  newStep.value = {
-    checkInDate: undefined,
-    checkOutDate: undefined,
-    location: undefined,
-    itineraryId: itinerary.value.id,
-    itineraryActivity: [],
-  };
-  isAddHotel.value = true; 
+  newStep.value.id = undefined;
+  newStep.value.stepNumber = undefined;
+  newStep.value.itineraryActivity = [];
+  newStep.value.itineraryFlight = [];
+  newStep.value.itineraryHotel = [];
+  isAddStep.value = true;
 }
 
 function openEditStep(step) {
   newStep.value.id = step.id;
   newStep.value.stepNumber = step.stepNumber;
-  newStep.value.instruction = step.instruction;
   newStep.value.itineraryActivity = step.itineraryActivity;
+  newStep.value.itineraryFlight = step.itineraryFlight;
+  newStep.value.itineraryHotel = step.itineraryHotel;
   isEditStep.value = true;
 }
 
 function closeAddStep() {
-  isAddHotel.value = false;
+  isAddStep.value = false;
 }
 
 function closeEditStep() {
@@ -653,6 +756,121 @@ function closeSnackBar() {
         </v-card>
       </v-col>
     </v-row>
+
+    <v-row>
+      <v-col>
+        <v-card class="rounded-lg elevation-5">
+          <v-card-title
+            ><v-row align="center">
+              <v-col cols="10"
+                ><v-card-title class="headline">Steps </v-card-title>
+              </v-col>
+              <v-col class="d-flex justify-end" cols="2">
+                <v-btn color="accent" @click="openAddStep()">Add</v-btn>
+              </v-col>
+            </v-row>
+          </v-card-title>
+          <v-card-text>
+            <v-table>
+              <tbody>
+                <tr v-for="step in itinerarySteps" :key="step.id">
+                  <td>{{ step.stepNumber }}</td>
+                  <td>
+                    <v-chip
+                      size="small"
+                      v-for="activity in step.itineraryActivity"
+                      :key="activity.id"
+                      pill
+                      >{{ activity.name }}</v-chip
+                    >
+                  </td>
+                  <td>
+                    <v-icon
+                      size="x-small"
+                      icon="mdi-pencil"
+                      @click="openEditStep(step)"
+                    ></v-icon>
+                  </td>
+                  <td>
+                    <v-icon
+                      size="x-small"
+                      icon="mdi-trash-can"
+                      @click="deleteStep(step)"
+                    >
+                    </v-icon>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </v-card-text> </v-card
+      ></v-col>
+    </v-row>
+
+    <v-dialog persistent :model-value="isAddStep || isEditStep" width="800">
+      <v-card class="rounded-lg elevation-5">
+        <v-card-title class="headline mb-2">
+          {{ isAddStep ? "Add Step" : isEditStep ? "Edit Step" : "" }}
+        </v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="newStep.stepNumber"
+            label="Number"
+            type="number"
+            required
+          ></v-text-field>
+          <v-select
+            v-model="newStep.Activity"
+            :items="activities"
+            item-title="activity.name"
+            item-value="id"
+            label="Activities"
+            return-object
+            multiple
+            chips
+          ></v-select>
+          <v-select
+            v-model="newStep.Flight"
+            :items="flights"
+            item-title="flight.name"
+            item-value="id"
+            label="Flights"
+            return-object
+            multiple
+            chips
+          ></v-select>
+          <v-select
+            v-model="newStep.Hotel"
+            :items="hotels"
+            item-title="hotel.name"
+            item-value="id"
+            label="Hotels"
+            return-object
+            multiple
+            chips
+          ></v-select>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            variant="flat"
+            color="secondary"
+            @click="
+              isAddStep ? closeAddStep() : isEditStep ? closeEditStep() : false
+            "
+            >Close</v-btn
+          >
+          <v-btn
+            variant="flat"
+            color="primary"
+            @click="isAddStep ? addStep() : isEditStep ? updateStep() : false"
+            >{{
+              isAddStep ? "Add Step" : isEditStep ? "Update Step" : ""
+            }}</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-row>
       <v-col>
         <v-card class="rounded-lg elevation-5">
@@ -662,12 +880,20 @@ function closeSnackBar() {
                 <v-card-title class="headline">Activities</v-card-title>
               </v-col>
               <v-col class="d-flex justify-end" cols="2">
-                <v-btn color="accent" @click="openAddActivity">Add Activity</v-btn>
+                <v-btn color="accent" @click="openAddActivity()">Add Activity</v-btn>
               </v-col>
             </v-row>
           </v-card-title>
           <v-card-text>
             <v-table>
+              <thead>
+                <tr>
+                  <th class="text-left">Name</th>
+                  <th class="text-left">Date & Time</th>
+                  <th class="text-left">Location</th>
+                  <th class="text-left">Description</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr v-for="activity in activities" :key="activity.id">
                   <td>{{ activity.name }}</td>
@@ -765,6 +991,15 @@ function closeSnackBar() {
           </v-card-title>
           <v-card-text>
             <v-table>
+              <thead>
+                <tr>
+                  <th class="text-left">Flight Number</th>
+                  <th class="text-left">Depature Date & Time</th>
+                  <th class="text-left">Departure Location</th>
+                  <th class="text-left">Arrival Date & Time</th>
+                  <th class="text-left">Arrival Location</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr v-for="flight in flights" :key="flight.id">
                   <td>{{ flight.flightNumber }}</td>
@@ -773,19 +1008,25 @@ function closeSnackBar() {
                   <td>{{ flight.arrivalLocation }}</td>
                   <td>{{ flight.arrivalDateTime }}</td>
                   <td>
-                    <v-icon size="x-small" @click="addFlightToItinerary(flight)">
-                      mdi-plus
-                    </v-icon>
+                    <v-icon 
+                      size="x-small"
+                      icon="mdi-plus"
+                      @click="addFlightToItinerary(flight)"
+                    ></v-icon>
                   </td>
                   <td>
-                    <v-icon size="x-small" @click="openEditFlight(flight)">
-                      mdi-pencil
-                    </v-icon>
+                    <v-icon 
+                      size="x-small"
+                      icon="mdi-pencil" 
+                      @click="openEditFlight(flight)"
+                    ></v-icon>
                   </td>
                   <td>
-                    <v-icon size="x-small" @click="deleteFlight(flight)">
-                      mdi-trash-can
-                    </v-icon>
+                    <v-icon 
+                      size="x-small"
+                      icon="mdi-trash-can"
+                      @click="deleteFlight(flight)"
+                    ></v-icon>
                   </td>
                 </tr>
               </tbody>
@@ -873,6 +1114,14 @@ function closeSnackBar() {
           </v-card-title>
           <v-card-text>
             <v-table>
+                <thead>
+                  <tr>
+                    <th class="text-left">Name</th>
+                    <th class="text-left">Check In Date</th>
+                    <th class="text-left">Check Out Date</th>
+                    <th class="text-left">Location</th>
+                  </tr>
+              </thead>
               <tbody>
                 <tr v-for="hotel in hotels" :key="hotel.id">
                   <td>{{ hotel.name }}</td>
@@ -964,5 +1213,14 @@ function closeSnackBar() {
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-snackbar v-model="snackbar.value" rounded="pill">
+      {{ snackbar.text }}
+
+      <template v-slot:actions>
+        <v-btn :color="snackbar.color" variant="text" @click="closeSnackBar()">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>

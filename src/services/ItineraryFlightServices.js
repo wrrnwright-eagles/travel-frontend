@@ -7,6 +7,15 @@ export default {
   getItineraryFlightsForItinerary(itineraryId) {
     return apiClient.get("itineraries/" + itineraryId + "/itineraryFlights");
   },
+  getItineraryFlightsForItineraryStep(itineraryId, itineraryStepId) {
+    return apiClient.get(
+      "itineraries/" +
+        itineraryId +
+        "/itinerarySteps/" +
+        itineraryStepId +
+        "/itineraryFlightsWithFlights"
+    );
+  },
   getItineraryFlight(itineraryFlight) {
     return apiClient.get(
       "itineraries/" +

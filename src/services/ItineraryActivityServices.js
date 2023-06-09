@@ -20,7 +20,17 @@ export default {
     });
   },
 
-getItineraryActivitiesForItinerary(itineraryId) {
+  getItineraryActivitiesForItineraryStep(itineraryId, itineraryStepId) {
+    return apiClient.get(
+      "itineraries/" +
+        itineraryId +
+        "/itinerarySteps/" +
+        itineraryStepId +
+        "/itineraryActivitiesWithActivities"
+    );
+  },
+
+  getItineraryActivitiesForItinerary(itineraryId) {
     return apiClient.get("itineraries/" + itineraryId + "/itineraryActivities")
       .catch(error => {
         console.error('There was an error!', error.message);
