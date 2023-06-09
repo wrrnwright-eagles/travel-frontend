@@ -78,10 +78,10 @@ onMounted(async () => {
   await getActivities();
   await getFlights();
   await getHotels();
+  await getItinerarySteps();
   await getItineraryActivities();
   await getItineraryFlights();
   await getItineraryHotels();
-  await getItinerarySteps();
 });
 
 async function getItinerary() {
@@ -154,37 +154,23 @@ async function getItineraryActivities() {
 }
 
 async function addActivity() {
-  isAddActivity.value = false;
-
-  if (!itinerary.value || !selectedActivity.value) {
-    console.error("Either itinerary or selectedActivity is undefined");
-    snackbar.value = {
-      value: true,
-      color: "error",
-      text: "Cannot add activity. Itinerary or selected activity is missing.",
-    };
-    return;
-  }
-  
+  isAddActivity.value = false;  
   newActivity.value.itineraryId = itinerary.value.id;
+  newActivity.value.quantity = 1;
   newActivity.value.activityId = selectedActivity.value.id;
   delete newActivity.value.id;
-
-  try {
-    await ItineraryActivityServices.addItineraryActivity(newActivity.value);
-    snackbar.value = {
-      value: true,
-      color: "green",
-      text: "Activity added successfully!",
-    };
-  } catch (error) {
-    console.log(error);
-    snackbar.value = {
-      value: true,
-      color: "error",
-      text: error.response.data.message,
-    };
-  }
+  await ItineraryActivityServices.addItineraryActivity(newActivity.value)
+    .then(() => {
+      snackbar.value.value = true;
+      snackbar.value.color = "green";
+      snackbar.value.text = `Activity added successfully!`;
+    })
+    .catch((error) => {
+      console.log(error);
+      snackbar.value.value = true;
+      snackbar.value.color = "error";
+      snackbar.value.text = error.response.data.message;
+    });
 
   await getItineraryActivities();
 }
@@ -240,7 +226,7 @@ async function checkUpdateActivity() {
 
 function openAddActivity() {
   newActivity.value.id = undefined;
-  newActivity.value.quantity = undefined;
+  newActivity.value.quantity = 1;
   newActivity.value.itineraryStepId = undefined;
   newActivity.value.activityId = undefined;
   selectedActivity.value = undefined;
@@ -317,8 +303,8 @@ async function checkUpdateFlight() {
 async function addFlight() {
   isAddFlight.value = false;
   newFlight.value.itineraryId = itinerary.value.id;
-
-  await FlightServices.addFlight(newFlight.value)
+  newFlight.value.flightId = selectedActivity.value.id;
+  await ItineraryFlightServices.addFlight(newFlight.value)
     .then(() => {
       snackbar.value = {
         value: true,
@@ -335,13 +321,14 @@ async function addFlight() {
       };
     });
 
-  await getFlights();
+  await getItineraryFlights();
 }
 
 async function updateFlight() {
   isEditFlight.value = false;
-
-  await FlightServices.updateFlight(newFlight.value)
+  newFlight.value.itineraryId = itinerary.value.id;
+  newFlight.value.flightId = selectedActivity.value.id;
+  await ItineraryFlightServices.updateItineraryFlight(newFlight.value)
     .then(() => {
       snackbar.value = {
         value: true,
@@ -454,8 +441,9 @@ async function addHotel() {
 
 async function updateHotel() {
   isEditHotel.value = false;
-
-  await HotelServices.updateHotel(newHotel.value)
+  newHotel.value.itineraryId = itinerary.value.id;
+  newHotel.value.hotelId = selectedHotel.value.id;
+  await ItineraryHotelServices.updateItineraryHotel(newHotel.value)
     .then(() => {
       snackbar.value = {
         value: true,
@@ -707,7 +695,7 @@ function closeSnackBar() {
     <v-row align="center">
       <v-col cols="10">
         <v-card-title class="pl-0 text-h4 font-weight-bold">
-          {{ isAddStep || isEditStep ? "Edit Step" : "Edit Itinerary" }}
+          Edit Itinerary
         </v-card-title>
       </v-col>
     </v-row>
@@ -746,6 +734,37 @@ function closeSnackBar() {
                 ></v-textarea>
               </v-col>
             </v-row>
+            <v-table>
+              <tbody>
+                <tr v-for="step in itinerarySteps" :key="step.id">
+                  <td>{{ step.stepNumber }}</td>
+                  <td>
+                    <v-chip
+                      size="small"
+                      v-for="activity in step.itineraryActivity"
+                      :key="activity.id"
+                      pill
+                      >{{ activity.activity.name }}</v-chip
+                    >
+                  </td>
+                  <td>
+                    <v-icon
+                      size="x-small"
+                      icon="mdi-pencil"
+                      @click="openEditStep(step)"
+                    ></v-icon>
+                  </td>
+                  <td>
+                    <v-icon
+                      size="x-small"
+                      icon="mdi-trash-can"
+                      @click="deleteStep(step)"
+                    >
+                    </v-icon>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
           </v-card-text>
           <v-card-actions class="pt-0">
             <v-btn variant="outlined" color="primary" @click="updateItinerary">
@@ -819,10 +838,10 @@ function closeSnackBar() {
             required
           ></v-text-field>
           <v-select
-            v-model="newStep.Activity"
+            v-model="newStep.selectedActivity"
             :items="activities"
-            item-title="activity.name"
-            item-value="id"
+            item-title="name"
+            item-value="name"
             label="Activities"
             return-object
             multiple
@@ -901,7 +920,7 @@ function closeSnackBar() {
                   <td>{{ activity.location }}</td>
                   <td>{{ activity.description }}</td>
                   <td>
-                    <v-icon size="x-small" @click="addActivityToItinerary(activity)">
+                    <v-icon size="x-small" @click="addActivity(activity)">
                       mdi-plus
                     </v-icon>
                   </td>
@@ -932,27 +951,32 @@ function closeSnackBar() {
           <v-text-field
             v-model="newActivity.name"
             label="name"
-            required
           ></v-text-field>
 
           <v-text-field
             v-model="newActivity.dateTime"
             label="Date & Time"
             type="date"
-            required
           ></v-text-field>
 
           <v-text-field
             v-model="newActivity.location"
             label="Activity Location"
-            required
           ></v-text-field>
 
           <v-text-field
             v-model="newActivity.description"
             label="Description"
-            required
           ></v-text-field>
+          <v-select
+            v-model="selectedActivity"
+            :items="activities"
+            item-title="name"
+            label="Activities"
+            return-object
+            multiple
+            chips
+          ></v-select>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -994,10 +1018,10 @@ function closeSnackBar() {
               <thead>
                 <tr>
                   <th class="text-left">Flight Number</th>
-                  <th class="text-left">Depature Date & Time</th>
-                  <th class="text-left">Departure Location</th>
-                  <th class="text-left">Arrival Date & Time</th>
+                  <th class="text-left">Depature Location</th>
+                  <th class="text-left">Departure Date & Time</th>
                   <th class="text-left">Arrival Location</th>
+                  <th class="text-left">Arrival Date & Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -1075,6 +1099,18 @@ function closeSnackBar() {
                 required
               ></v-text-field>
             </v-col>
+          </v-row>
+          <v-row>
+            <v-select
+            v-model="selectedFlight"
+            :items="flights"
+            item-title="flightNumber"
+            item-value="flightNumber"
+            label="Flights"
+            return-object
+            multiple
+            chips
+          ></v-select>
           </v-row>
         </v-card-text>
         <v-card-actions>
@@ -1183,14 +1219,13 @@ function closeSnackBar() {
           <v-select
             v-model="selectedHotel"
             :items="hotels"
-            item-text="name"
+            item-title="name"
             item-value="name"
             label="Hotels"
             return-object
             multiple
             chips
-          >
-          </v-select>
+          ></v-select>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
