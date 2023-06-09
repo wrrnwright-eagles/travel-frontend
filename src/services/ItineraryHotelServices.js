@@ -7,6 +7,15 @@ export default {
   getItineraryHotelsForItinerary(itineraryId) {
     return apiClient.get("itineraries/" + itineraryId + "/itineraryHotels");
   },
+  getItineraryHotelsForItineraryStep(itineraryId, itineraryStepId) {
+    return apiClient.get(
+      "itineraries/" +
+        itineraryId +
+        "/itinerarySteps/" +
+        itineraryStepId +
+        "/itineraryHotelsWithHotels"
+    );
+  },
   getItineraryHotel(itineraryHotel) {
     return apiClient.get(
       "itineraries/" +

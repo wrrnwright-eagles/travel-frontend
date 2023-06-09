@@ -13,7 +13,15 @@ export default {
         console.error('There was an error!', error);
       });
   },
-
+  getItineraryStepsForItineraryWithActivities(itineraryId) {
+    return apiClient.get("itineraries/" + itineraryId + "/itineraryStepsWithActivities");
+  },
+  getItineraryStepsForItineraryWithFlights(itineraryId) {
+    return apiClient.get("itineraries/" + itineraryId + "/itineraryStepsWithFlights");
+  },
+  getItineraryStepsForItineraryWithHotels(itineraryId) {
+    return apiClient.get("itineraries/" + itineraryId + "/itineraryStepsWithHotels");
+  },
   getItineraryStep(itineraryStep) {
     return apiClient.get(
       "itineraries/" + itineraryStep.itineraryId + "/itinerarySteps/" + itineraryStep.id
