@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref} from "vue";
 import { useRoute } from "vue-router";
 import ActivityServices from "../services/ActivityServices";
 import ItineraryActivityServices from "../services/ItineraryActivityServices";
@@ -54,8 +54,8 @@ const newActivity = ref({ // Added for Activities
   id: undefined,
   quantity: undefined,
   itineraryId: undefined,
-  itineraryStepId: undefined,
   activityId: undefined,
+  itineraryStepId: undefined,
 });
 
 const newStep = ref({
@@ -95,12 +95,6 @@ async function getItinerary() {
 }
 
 
-watch(itinerary, async (newVal, oldVal) => {
-  if (newVal !== oldVal && newVal !== undefined) {
-    await getItineraryActivities();
-    await getItinerarySteps();
-  }
-}, { immediate: true });
 
 async function updateItinerary() {
   try {
@@ -154,10 +148,12 @@ async function getItineraryActivities() {
 }
 
 async function addActivity() {
-  isAddActivity.value = false;  
+  console.log(selectedActivity.value.name);
+  isAddActivity.value = false;
   newActivity.value.itineraryId = itinerary.value.id;
   newActivity.value.quantity = 1;
   newActivity.value.activityId = selectedActivity.value.id;
+  console.log(newActivity.value.activityId);
   delete newActivity.value.id;
   await ItineraryActivityServices.addItineraryActivity(newActivity.value)
     .then(() => {
@@ -303,8 +299,8 @@ async function checkUpdateFlight() {
 async function addFlight() {
   isAddFlight.value = false;
   newFlight.value.itineraryId = itinerary.value.id;
-  newFlight.value.flightId = selectedActivity.value.id;
-  await ItineraryFlightServices.addFlight(newFlight.value)
+  newFlight.value.flightId = selectedFlight.value.id;
+  await ItineraryFlightServices.addItineraryFlight(newFlight.value)
     .then(() => {
       snackbar.value = {
         value: true,
@@ -327,7 +323,7 @@ async function addFlight() {
 async function updateFlight() {
   isEditFlight.value = false;
   newFlight.value.itineraryId = itinerary.value.id;
-  newFlight.value.flightId = selectedActivity.value.id;
+  newFlight.value.flightId = selectedFlight.value.id;
   await ItineraryFlightServices.updateItineraryFlight(newFlight.value)
     .then(() => {
       snackbar.value = {
@@ -850,8 +846,8 @@ function closeSnackBar() {
           <v-select
             v-model="newStep.Flight"
             :items="flights"
-            item-title="flight.name"
-            item-value="id"
+            item-title="flightNumber"
+            item-value="flightNumber"
             label="Flights"
             return-object
             multiple
@@ -860,8 +856,8 @@ function closeSnackBar() {
           <v-select
             v-model="newStep.Hotel"
             :items="hotels"
-            item-title="hotel.name"
-            item-value="id"
+            item-title="name"
+            item-value="name"
             label="Hotels"
             return-object
             multiple
@@ -1105,7 +1101,6 @@ function closeSnackBar() {
             v-model="selectedFlight"
             :items="flights"
             item-title="flightNumber"
-            item-value="flightNumber"
             label="Flights"
             return-object
             multiple
@@ -1220,7 +1215,6 @@ function closeSnackBar() {
             v-model="selectedHotel"
             :items="hotels"
             item-title="name"
-            item-value="name"
             label="Hotels"
             return-object
             multiple
