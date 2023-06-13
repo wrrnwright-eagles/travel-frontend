@@ -124,61 +124,40 @@ defineExpose({ handleSubscribe, snackbar, snackbarMessage, isSubscribed });
     </v-card-text>
     <v-expand-transition>
       <v-card-text class="pt-0" v-show="showDetails">
-        <h3>Activities</h3> <!-- All this needs to be fixed to display activities-->
+        <h3>Activities</h3>
         <v-list>
           <v-list-item
-            v-for="itineraryActivity in itineraryActivities"
-            :key="itineraryActivity.id"
+            v-for="activity in itinerary.activities"
+            :key="activity.id"
           >
-            <b
-              >{{ itineraryActivity.activity.name }} 
-              {{
-                `${itineraryActivity.activity.unit}${
-                  itineraryActivity.quantity > 1 ? "s" : ""
-                }`
-              }}</b
-            >
-            of {{ itineraryActivity.activity.name }} (${{
-              itineraryActivity.activity.pricePerUnit
-            }}/{{ itineraryActivity.activity.unit }})
+            {{ activity.name }} - {{ activity.description }}
           </v-list-item>
         </v-list>
-        <h3>Flights</h3> <!-- All this needs to be fixed to display flights-->
+        <h3>Participants</h3>
+<v-list>
+  <v-list-item
+    v-for="participant in itinerary.participants"
+    :key="participant.id"
+  >
+    {{ participant.name }}
+  </v-list-item>
+</v-list>
+        <h3>Flights</h3>
         <v-list>
           <v-list-item
-            v-for="itineraryFlights in itineraryFlights"
-            :key="itineraryFlight.id"
+            v-for="flight in itinerary.flights"
+            :key="flight.id"
           >
-            <b
-              >{{ itineraryActivity.quantity }} 
-              {{
-                `${itineraryActivity.activity.unit}${
-                  itineraryActivity.quantity > 1 ? "s" : ""
-                }`
-              }}</b
-            >
-            of {{ itineraryActivity.activity.name }} (${{
-              itineraryActivity.activity.pricePerUnit
-            }}/{{ itineraryActivity.activity.unit }})
+            {{ flight.origin }} to {{ flight.destination }} - {{ flight.flightNumber }}
           </v-list-item>
         </v-list>
-        <h3>Hotels</h3> <!-- All this needs to be fixed to display hotels-->
+        <h3>Hotels</h3>
         <v-list>
           <v-list-item
-            v-for="itineraryFlights in itineraryFlights"
-            :key="itineraryFlight.id"
+            v-for="hotel in itinerary.hotels"
+            :key="hotel.id"
           >
-            <b
-              >{{ itineraryActivity.quantity }} 
-              {{
-                `${itineraryActivity.activity.unit}${
-                  itineraryActivity.quantity > 1 ? "s" : ""
-                }`
-              }}</b
-            >
-            of {{ itineraryActivity.activity.name }} (${{
-              itineraryActivity.activity.pricePerUnit
-            }}/{{ itineraryActivity.activity.unit }})
+            {{ hotel.name }} - {{ hotel.address }}
           </v-list-item>
         </v-list>
         <h3>Trip Details</h3>
