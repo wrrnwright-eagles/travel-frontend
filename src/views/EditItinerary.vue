@@ -1,14 +1,14 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import ActivityServices from "../services/ActivityServices";
-import ItineraryActivityServices from "../services/ItineraryActivityServices";
-import HotelServices from "../services/HotelServices";
-import ItineraryHotelServices from "../services/ItineraryHotelServices";
+import ActivityServices from "../services/ActivityServices.js";
+import ItineraryActivityServices from "../services/ItineraryActivityServices.js";
+import HotelServices from "../services/HotelServices.js";
+import ItineraryHotelServices from "../services/ItineraryHotelServices.js";
 import FlightServices from "../services/FlightServices.js";
-import ItineraryFlightServices from "../services/ItineraryFlightServices";
-import ItineraryStepServices from "../services/ItineraryStepServices";
-import ItineraryServices from "../services/ItineraryServices";
+import ItineraryFlightServices from "../services/ItineraryFlightServices.js";
+import ItineraryStepServices from "../services/ItineraryStepServices.js";
+import ItineraryServices from "../services/ItineraryServices.js";
 
 const props = defineProps({
   itinerary: {
@@ -51,17 +51,20 @@ const addPerson = () => {
 
 const activities = ref([]);
 const selectedActivity = ref({});
-const itineraryActivity = ref([]);
+const itineraryActivity = ref({});
+const itineraryActivities = ref([]);
 const isAddActivity = ref(false);
 const isEditActivity = ref(false);
 const flights = ref([]);
 const selectedFlight = ref({});
-const itineraryFlight = ref([]);
+const itineraryFlight = ref({});
+const itineraryFlights = ref([]);
 const isAddFlight = ref(false); // Added for Flights
 const isEditFlight = ref(false);
 const hotels = ref([]);
 const selectedHotel = ref({});
-const itineraryHotel = ref([]);
+const itineraryHotel = ref({});
+const itineraryHotels = ref([]);
 const isAddHotel = ref(false);
 const isEditHotel = ref(false);
 const itinerarySteps = ref([]);
@@ -81,7 +84,7 @@ const newFlight = ref({ // Added for Flights
   quantity: undefined,
   itineraryId: undefined,
   itineraryStepId: undefined,
-  itineraryId: undefined,
+  flightId: undefined,
 });
 
 const newActivity = ref({ // Added for Activities
@@ -182,12 +185,12 @@ async function getItineraryActivities() {
 }
 
 async function addActivity() {
-  console.log(selectedActivity.value.name);
+  console.log("selectedActivity = " + (selectedActivity.value[0].id));
   isAddActivity.value = false;
   newActivity.value.itineraryId = itinerary.value.id;
   newActivity.value.quantity = 1;
-  newActivity.value.activityId = selectedActivity.value.id;
-  console.log(newActivity.value.activityId);
+  newActivity.value.activityId = selectedActivity.value[0].id;
+  console.log("newActivity = " + newActivity.value);
   delete newActivity.value.id;
   await ItineraryActivityServices.addItineraryActivity(newActivity.value)
     .then(() => {
@@ -209,7 +212,7 @@ async function addActivity() {
 async function updateActivity() {
   isEditActivity.value = false;
   newActivity.value.itineraryId = itinerary.value.id;
-  newActivity.value.activityId = selectedActivity.value.id;
+  newActivity.value.activityId = selectedActivity.value[0].id;
   console.log(newActivity);
 
   try {
@@ -255,10 +258,13 @@ async function checkUpdateActivity() {
 }
 
 function openAddActivity() {
-  newActivity.value.id = undefined;
-  newActivity.value.quantity = 1;
-  newActivity.value.itineraryStepId = undefined;
-  newActivity.value.activityId = undefined;
+  newActivity.value = {
+    id: undefined,
+    quantity: 1,
+    itineraryStepId: undefined,
+    itineraryId: itinerary.value.id,
+    activityId: undefined
+  };
   selectedActivity.value = undefined;
   isAddActivity.value = true;
 }
@@ -331,9 +337,11 @@ async function checkUpdateFlight() {
 }
 
 async function addFlight() {
+  console.log(selectedFlight.value);
   isAddFlight.value = false;
+  newFlight.value.quantity = 1;
   newFlight.value.itineraryId = itinerary.value.id;
-  newFlight.value.flightId = selectedFlight.value.id;
+  newFlight.value.flightId = selectedFlight.value[0].id;
   await ItineraryFlightServices.addItineraryFlight(newFlight.value)
     .then(() => {
       snackbar.value = {
@@ -357,7 +365,7 @@ async function addFlight() {
 async function updateFlight() {
   isEditFlight.value = false;
   newFlight.value.itineraryId = itinerary.value.id;
-  newFlight.value.flightId = selectedFlight.value.id;
+  newFlight.value.flightId = selectedFlight.value[0].id;
   await ItineraryFlightServices.updateItineraryFlight(newFlight.value)
     .then(() => {
       snackbar.value = {
@@ -390,12 +398,13 @@ async function getItineraryFlights() {
 
 function openAddFlight() {
   newFlight.value = {
-    departureLocation: undefined,
-    departureDateTime: undefined,
-    arrivalLocation: undefined,
-    arrivalDateTime: undefined,
+    id: undefined,
+    quantity: 1,
     itineraryId: itinerary.value.id,
+    flightId: undefined,
+    itineraryStepId: undefined
   };
+  selectedFlight.value = undefined;
   isAddFlight.value = true;
 }
 
@@ -415,9 +424,6 @@ function closeAddFlight() {
   isAddFlight.value = false;
 }
 
-function addFlightToItinerary(flight) {
-
-}
 
 // HOTEL FUNCTIONS
 async function getHotels() {
@@ -445,9 +451,11 @@ async function getHotels() {
 }
 
 async function addHotel() {
+  console.log(selectedHotel.value);
   isAddHotel.value = false;
+  newHotel.value.quantity = 1;
   newHotel.value.itineraryId = itinerary.value.id;
-  newHotel.value.hotelId = selectedHotel.value.id;
+  newHotel.value.hotelId = selectedHotel.value[0].id;
   delete newHotel.value.id;
   await ItineraryHotelServices.addItineraryHotel(newHotel.value)
     .then(() => {
@@ -472,7 +480,7 @@ async function addHotel() {
 async function updateHotel() {
   isEditHotel.value = false;
   newHotel.value.itineraryId = itinerary.value.id;
-  newHotel.value.hotelId = selectedHotel.value.id;
+  newHotel.value.hotelId = selectedHotel.value[0].id;
   await ItineraryHotelServices.updateItineraryHotel(newHotel.value)
     .then(() => {
       snackbar.value = {
@@ -539,11 +547,13 @@ async function getItineraryHotels() {
 
 function openAddHotel() {
   newHotel.value = {
-    checkInDate: undefined,
-    checkOutDate: undefined,
-    location: undefined,
+    id: undefined, 
+    quantity: 1, 
+    itineraryStepId: undefined,
     itineraryId: itinerary.value.id,
+    hotelId: undefined
   };
+  selectedHotel.value = undefined;
   isAddHotel.value = true;
 }
 
@@ -889,30 +899,27 @@ function closeSnackBar() {
             required
           ></v-text-field>
           <v-select
-            v-model="newStep.selectedActivity"
-            :items="activities"
+            v-model="newStep.itineraryActivity"
+            :items="itineraryActivities"
             item-title="name"
-            item-value="name"
             label="Activities"
             return-object
             multiple
             chips
           ></v-select>
           <v-select
-            v-model="newStep.Flight"
-            :items="flights"
+            v-model="newStep.itineraryFlight"
+            :items="itineraryFlights"
             item-title="flightNumber"
-            item-value="flightNumber"
             label="Flights"
             return-object
             multiple
             chips
           ></v-select>
           <v-select
-            v-model="newStep.Hotel"
-            :items="hotels"
+            v-model="newStep.itineraryHotel"
+            :items="itineraryHotels"
             item-title="name"
-            item-value="name"
             label="Hotels"
             return-object
             multiple
@@ -1019,15 +1026,17 @@ function closeSnackBar() {
             v-model="newActivity.description"
             label="Description"
           ></v-text-field>
-          <v-select
-            v-model="selectedActivity"
-            :items="activities"
-            item-title="name"
-            label="Activities"
-            return-object
-            multiple
-            chips
-          ></v-select>
+          <v-row>
+            <v-select
+              v-model="selectedActivity"
+              :items="activities"
+              item-title="name"
+              label="Activities"
+              return-object
+              multiple
+              chips
+            ></v-select>
+          </v-row>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -1086,7 +1095,7 @@ function closeSnackBar() {
                     <v-icon 
                       size="x-small"
                       icon="mdi-plus"
-                      @click="addFlightToItinerary(flight)"
+                      @click="addFlight(flight)"
                     ></v-icon>
                   </td>
                   <td>
@@ -1123,7 +1132,7 @@ function closeSnackBar() {
                 v-model="newFlight.departureDate"
                 label="Departure Date"
                 type="date"
-                required
+                
               ></v-text-field>
             </v-col>
             <v-col cols="6">
@@ -1131,7 +1140,7 @@ function closeSnackBar() {
                 v-model="newFlight.arrivalDate"
                 label="Arrival Date"
                 type="date"
-                required
+                
               ></v-text-field>
             </v-col>
           </v-row>
@@ -1147,7 +1156,7 @@ function closeSnackBar() {
               <v-text-field
                 v-model="newFlight.arrivalLocation"
                 label="Arrival Location"
-                required
+                
               ></v-text-field>
             </v-col>
           </v-row>
@@ -1215,7 +1224,7 @@ function closeSnackBar() {
                   <td>{{ hotel.checkOutDate }}</td>
                   <td>{{ hotel.location }}</td>
                   <td>
-                    <v-icon size="x-small" @click="addHotelToItinerary(hotel)">
+                    <v-icon size="x-small" @click="addHotel(hotel)">
                       mdi-plus
                     </v-icon>
                   </td>
@@ -1249,7 +1258,7 @@ function closeSnackBar() {
                 v-model="newHotel.checkInDate"
                 label="Check-in Date"
                 type="date"
-                required
+                
               ></v-text-field>
             </v-col>
             <v-col cols="6">
@@ -1257,14 +1266,14 @@ function closeSnackBar() {
                 v-model="newHotel.checkOutDate"
                 label="Check-out Date"
                 type="date"
-                required
+                
               ></v-text-field>
             </v-col>
           </v-row>
           <v-text-field
             v-model="newHotel.location"
             label="Location"
-            required
+            
           ></v-text-field>
           <v-select
             v-model="selectedHotel"
