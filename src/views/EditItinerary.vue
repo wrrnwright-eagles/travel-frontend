@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import ActivityServices from "../services/ActivityServices";
 import ItineraryActivityServices from "../services/ItineraryActivityServices";
@@ -10,11 +10,45 @@ import ItineraryFlightServices from "../services/ItineraryFlightServices";
 import ItineraryStepServices from "../services/ItineraryStepServices";
 import ItineraryServices from "../services/ItineraryServices";
 
+const props = defineProps({
+  itinerary: {
+    type: Object,
+    default: () => ({
+      name: "",
+      location: "",
+      isPublished: false,
+      description: "",
+      people: [],
+    }),
+    required: true
+  },
+});
 
+const emit = defineEmits(['update:itinerary']);
 
 const route = useRoute();
+const itinerary = ref({
+  name: "",
+  location: "",
+  isPublished: false,
+  description: "",
+  people: [],
+});
+const personToAdd = ref("");
 
-const itinerary = ref({});
+const addPerson = () => {
+  if (personToAdd.value.trim() !== '') {
+    // Ensuring 'people' is an array before pushing
+    if (!Array.isArray(itinerary.value.people)) {
+      itinerary.value.people = [];
+    }
+    itinerary.value.people.push(personToAdd.value.trim());
+    personToAdd.value = '';
+    emit('update:itinerary', itinerary.value);
+  }
+};
+
+
 const activities = ref([]);
 const selectedActivity = ref({});
 const itineraryActivity = ref([]);
@@ -699,37 +733,63 @@ function closeSnackBar() {
       <v-col>
         <v-card class="rounded-lg elevation-5">
           <v-card-text>
+           
             <v-row>
-              <v-col>
-                <v-text-field
-                  v-model="itinerary.name"
-                  label="Name"
-                  required
-                ></v-text-field>
-                <v-text-field
-                  v-model="itinerary.peopleToAdd"
-                  label="People to Add to Trip"
-                  required
-                ></v-text-field>
-                <v-text-field
-                  v-model.number="itinerary.location"
-                  label="Location"
-                ></v-text-field>
-                <v-switch
-                  v-model="itinerary.isPublished"
-                  hide-details
-                  inset
-                  :label="`Publish? ${itinerary.isPublished ? 'Yes' : 'No'}`"
-                ></v-switch>
-              </v-col>
-              <v-col>
-                <v-textarea
-                  v-model="itinerary.description"
-                  rows="10"
-                  label="Description"
-                ></v-textarea>
-              </v-col>
-            </v-row>
+    <v-col>
+      <v-text-field
+        v-model="itinerary.name"
+        label="Name"
+        required
+      ></v-text-field>
+      <v-text-field
+        v-model="itinerary.name"
+        label="Name"
+        required
+      ></v-text-field>
+      <v-text-field
+        v-model="personToAdd"
+        label="People to Add to Trip"
+        required
+      ></v-text-field>
+      <v-btn class="mb-1" color="primary" @click="addPerson">Add</v-btn>
+      <v-text-field
+        v-model.number="itinerary.location"
+        label="Location"
+        class="mt-3"
+      ></v-text-field>
+      <v-switch
+        v-model="itinerary.isPublished"
+        hide-details
+        inset
+        :label="`Publish? ${itinerary.isPublished ? 'Yes' : 'No'}`"
+      ></v-switch>
+    </v-col>
+    <v-col>
+      <v-textarea
+        v-model="itinerary.description"
+        rows="10"
+        label="Description"
+      ></v-textarea>
+    </v-col>
+  </v-row>
+  <v-row>
+    <v-col>
+      <v-card>
+        <v-card-title>
+          People in Trip
+        </v-card-title>
+        <v-card-text>
+          <v-list>
+            <v-list-item v-for="(person, index) in itinerary.people" :key="index">
+              <v-list-item-content>
+                <v-list-item-title>{{ person }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+      </v-card>
+    </v-col>
+  </v-row>
             <v-table>
               <tbody>
                 <tr v-for="step in itinerarySteps" :key="step.id">
