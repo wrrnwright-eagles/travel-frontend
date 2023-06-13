@@ -742,11 +742,6 @@ function closeSnackBar() {
         required
       ></v-text-field>
       <v-text-field
-        v-model="itinerary.name"
-        label="Name"
-        required
-      ></v-text-field>
-      <v-text-field
         v-model="personToAdd"
         label="People to Add to Trip"
         required
