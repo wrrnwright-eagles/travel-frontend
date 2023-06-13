@@ -47,6 +47,7 @@ async function createAccount() {
       };
     });
 }
+
 async function login() {
   console.log(user.value);
   await UserServices.loginUser(user)
