@@ -67,6 +67,7 @@ const itineraryHotel = ref({});
 const itineraryHotels = ref([]);
 const isAddHotel = ref(false);
 const isEditHotel = ref(false);
+const step = ref({});
 const itinerarySteps = ref([]);
 const isAddStep = ref(false);
 const isEditStep = ref(false);
@@ -177,7 +178,7 @@ async function getActivities() {
 async function getItineraryActivities() {
   await ItineraryActivityServices.getItineraryActivitiesForItinerary(route.params.id)
     .then((response) => {
-      itineraryActivity.value = response.data;
+      itineraryActivities.value = response.data;
     })
     .catch((error) => {
       console.log(error);
@@ -389,7 +390,7 @@ async function updateFlight() {
 async function getItineraryFlights() {
   await ItineraryFlightServices.getItineraryFlightsForItinerary(route.params.id)
     .then((response) => {
-      itineraryFlight.value = response.data;
+      itineraryFlights.value = response.data;
     })
     .catch((error) => {
       console.log(error);
@@ -538,7 +539,7 @@ async function checkUpdateHotel() {
 async function getItineraryHotels() {
   await ItineraryHotelServices.getItineraryHotelsForItinerary(route.params.id)
     .then((response) => {
-      itineraryHotel.value = response.data;
+      itineraryHotels.value = response.data;
     })
     .catch((error) => {
       console.log(error);
@@ -796,35 +797,6 @@ function closeSnackBar() {
     </v-col>
   </v-row>
             <v-table>
-              <tbody>
-                <tr v-for="step in itinerarySteps" :key="step.id">
-                  <td>{{ step.stepNumber }}</td>
-                  <td>
-                    <v-chip
-                      size="small"
-                      v-for="activity in step.itineraryActivity"
-                      :key="activity.id"
-                      pill
-                      >{{ activity.activity.name }}</v-chip
-                    >
-                  </td>
-                  <td>
-                    <v-icon
-                      size="x-small"
-                      icon="mdi-pencil"
-                      @click="openEditStep(step)"
-                    ></v-icon>
-                  </td>
-                  <td>
-                    <v-icon
-                      size="x-small"
-                      icon="mdi-trash-can"
-                      @click="deleteStep(step)"
-                    >
-                    </v-icon>
-                  </td>
-                </tr>
-              </tbody>
             </v-table>
           </v-card-text>
           <v-card-actions class="pt-0">
@@ -852,7 +824,7 @@ function closeSnackBar() {
           </v-card-title>
           <v-card-text>
             <v-table>
-              <tbody>
+                       <tbody>
                 <tr v-for="step in itinerarySteps" :key="step.id">
                   <td>{{ step.stepNumber }}</td>
                   <td>
@@ -861,7 +833,61 @@ function closeSnackBar() {
                       v-for="activity in step.itineraryActivity"
                       :key="activity.id"
                       pill
-                      >{{ activity.name }}</v-chip
+                      >{{ activity.activity.name }}</v-chip
+                    >
+                  </td>
+                  <td>
+                    <v-icon
+                      size="x-small"
+                      icon="mdi-pencil"
+                      @click="openEditStep(step)"
+                    ></v-icon>
+                  </td>
+                  <td>
+                    <v-icon
+                      size="x-small"
+                      icon="mdi-trash-can"
+                      @click="deleteStep(step)"
+                    >
+                    </v-icon>
+                  </td>
+                </tr>
+                <tr v-for="step in itinerarySteps" :key="step.id">
+                  <td>{{ step.stepNumber }}</td>
+                  <td>
+                    <v-chip
+                      size="small"
+                      v-for="flight in step.itineraryFlight"
+                      :key="flight.id"
+                      pill
+                      >{{ flight.flight.name }}</v-chip
+                    >
+                  </td>
+                  <td>
+                    <v-icon
+                      size="x-small"
+                      icon="mdi-pencil"
+                      @click="openEditStep(step)"
+                    ></v-icon>
+                  </td>
+                  <td>
+                    <v-icon
+                      size="x-small"
+                      icon="mdi-trash-can"
+                      @click="deleteStep(step)"
+                    >
+                    </v-icon>
+                  </td>
+                </tr>
+                <tr v-for="step in itinerarySteps" :key="step.id">
+                  <td>{{ step.stepNumber }}</td>
+                  <td>
+                    <v-chip
+                      size="small"
+                      v-for="hotel in step.itineraryHotel"
+                      :key="hotel.id"
+                      pill
+                      >{{ hotel.hotel.name }}</v-chip
                     >
                   </td>
                   <td>
@@ -901,7 +927,7 @@ function closeSnackBar() {
           <v-select
             v-model="newStep.itineraryActivity"
             :items="itineraryActivities"
-            item-title="name"
+            item-title="activity.name"
             label="Activities"
             return-object
             multiple
@@ -910,7 +936,7 @@ function closeSnackBar() {
           <v-select
             v-model="newStep.itineraryFlight"
             :items="itineraryFlights"
-            item-title="flightNumber"
+            item-title="flight.flightNumber"
             label="Flights"
             return-object
             multiple
@@ -919,7 +945,7 @@ function closeSnackBar() {
           <v-select
             v-model="newStep.itineraryHotel"
             :items="itineraryHotels"
-            item-title="name"
+            item-title="hotel.name"
             label="Hotels"
             return-object
             multiple
