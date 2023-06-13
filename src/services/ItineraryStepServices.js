@@ -2,13 +2,13 @@ import apiClient from "./services";
 
 export default {
   getItinerarySteps() {
-    return apiClient.get("itinerarySteps")
+    return apiClient.get("itineraryStep")
       .catch(error => {
         console.error('There was an error!', error);
       });
   },
   getItineraryStepsForItinerary(itineraryId) {
-    return apiClient.get("itineraries/" + itineraryId + "/itinerarySteps")
+    return apiClient.get("itineraries/" + itineraryId + "/itineraryStep/")
       .catch(error => {
         console.error('There was an error!', error);
       });
@@ -24,7 +24,7 @@ export default {
   },
   getItineraryStep(itineraryStep) {
     return apiClient.get(
-      "itineraries/" + itineraryStep.itineraryId + "/itinerarySteps/" + itineraryStep.id
+      "itineraries/" + itineraryStep.itineraryId + "/itineraryStep/" + itineraryStep.id
     )
     .catch(error => {
       console.error(error.response.data);
@@ -35,7 +35,7 @@ export default {
   },
   addItineraryStep(itineraryStep) {
     return apiClient.post(
-      "itineraries/" + itineraryStep.itineraryId + "/itinerarySteps",
+      "itineraries/" + itineraryStep.itineraryId + "/itineraryStep",
       itineraryStep
     )
     .catch(error => {
@@ -47,7 +47,7 @@ export default {
   },
   updateItineraryStep(itineraryStep) {
     return apiClient.put(
-      "itineraries/" + itineraryStep.itineraryId + "/itinerarySteps/" + itineraryStep.id,
+      "itineraries/" + itineraryStep.itineraryId + "/itineraryStep/" + itineraryStep.id,
       itineraryStep
     )
     .catch(error => {
@@ -59,7 +59,7 @@ export default {
   },
   deleteItineraryStep(itineraryStep) {
     return apiClient.delete(
-      "itineraries/" + itineraryStep.itineraryId + "/itinerarySteps/" + itineraryStep.id
+      "itineraries/" + itineraryStep.itineraryId + "/itineraryStep/" + itineraryStep.id
     )
     .catch(error => {
       console.error(error.response.data);
