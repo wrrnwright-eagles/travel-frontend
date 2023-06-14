@@ -49,13 +49,13 @@ function logout() {
       <v-btn v-if="user === null" class="mx-2" :to="{ name: 'login' }">
         Login
       </v-btn>
-      <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'activities' }">
+      <v-btn v-if="user !== null && user.isAdmin" class="mx-2" :to="{ name: 'activities' }">
         Activities
       </v-btn>
-      <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'flights' }">
+      <v-btn v-if="user !== null && user.isAdmin" class="mx-2" :to="{ name: 'flights' }">
         Flights
       </v-btn>
-      <v-btn v-if="user !== null" class="mx-2" :to="{ name: 'hotels' }">
+      <v-btn v-if="user !== null && user.isAdmin" class="mx-2" :to="{ name: 'hotels' }">
         Hotels
       </v-btn>
       <v-menu v-if="user !== null" min-width="200px" rounded>

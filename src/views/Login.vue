@@ -49,8 +49,9 @@ async function createAccount() {
 }
 
 async function login() {
+  console.log("Logging in with user:", user.value);  // Add this line
   console.log(user.value);
-  await UserServices.loginUser(user.value)  // Pass user.value instead of user
+  await UserServices.loginUser(user.value)  
     .then((data) => {
       window.localStorage.setItem("user", JSON.stringify(data.data));
       snackbar.value = {
@@ -69,6 +70,8 @@ async function login() {
       };
     });
 }
+
+
 
 
 function openCreateAccount() {

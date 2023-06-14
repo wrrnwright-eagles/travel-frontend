@@ -96,8 +96,7 @@ function closeSnackBar() {
           </v-card-title>
         </v-col>
         <v-col class="d-flex justify-end" cols="3">
-          <v-btn v-if="user !== null" color="accent" @click="openAdd()"
-            > Add Itinerary </v-btn>
+          <v-btn v-if="user !== null && user.isAdmin" color="accent" @click="openAdd()"> Add Itinerary </v-btn>
         </v-col>
       </v-row>
 
