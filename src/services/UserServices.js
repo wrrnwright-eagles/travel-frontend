@@ -5,19 +5,20 @@ async function getUser() {
 }
 
 async function addUser(user) {
+  console.log("User value:", user); // Check the value being passed to the addUser function
   return apiClient.post("users", user);
 }
 
 async function loginUser(user) {
-  console.log(user.value); // Access the value property
+  console.log(user); // Access the value property
 
-  return apiClient.post("login", user.value, { // Pass user.value instead of user
+  return apiClient.post("login", user, {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
       "X-Requested-With": "XMLHttpRequest",
       crossDomain: true,
-      Authorization: "Basic " + btoa(user.value.email + ":" + user.value.password),
+      Authorization: "Basic " + btoa(user.email + ":" + user.password),
     },
   });
 }
@@ -35,6 +36,7 @@ async function subscribeToItinerary(email, itineraryId) {
     email: email,
     itineraryId: itineraryId,
   };
+  return apiClient.post("subscribe", payload);
 }
 
 export default {
