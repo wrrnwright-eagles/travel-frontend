@@ -120,6 +120,9 @@ onMounted(async () => {
   await getItineraryActivities();
   await getItineraryFlights();
   await getItineraryHotels();
+  await getItineraryActivitySteps();
+  await getItineraryFlightSteps();
+  await getItineraryHotelSteps();
 });
 
 async function getItinerary() {
@@ -151,12 +154,35 @@ async function updateItinerary() {
 
 async function getItinerarySteps() {
   try {
-    const responseA = await ItineraryStepServices.getItineraryStepsForItineraryWithActivities(route.params.id);
-    itinerarySteps.value = responseA.data;
-    const responseF = await ItineraryStepServices.getItineraryStepsForItineraryWithFlights(route.params.id);
-    itinerarySteps.value = responseF.data;
-    const responseH = await ItineraryStepServices.getItineraryStepsForItineraryWithHotels(route.params.id);
-    itinerarySteps.value = responseH.data;
+    const response = await ItineraryStepServices.getItinerarySteps(route.params.id);
+    itinerarySteps.value = response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getItineraryActivitySteps() {
+  try {
+    const response = await ItineraryStepServices.getItineraryStepsForItineraryWithActivities(route.params.id);
+    itinerarySteps.value = response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getItineraryFlightSteps() {
+  try {
+    const response = await ItineraryStepServices.getItineraryStepsForItineraryWithFlights(route.params.id);
+    itinerarySteps.value = response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getItineraryHotelSteps() {
+  try {
+    const response = await ItineraryStepServices.getItineraryStepsForItineraryWithHotels(route.params.id);
+    itinerarySteps.value = response.data;
   } catch (error) {
     console.log(error);
   }
@@ -213,7 +239,7 @@ async function addActivity() {
 async function updateActivity() {
   isEditActivity.value = false;
   newActivity.value.itineraryId = itinerary.value.id;
-  newActivity.value.activityId = selectedActivity.value[0].id;
+  newActivity.value.activityId = selectedActivity.value.id;
   console.log(newActivity);
 
   try {
@@ -235,7 +261,7 @@ async function deleteActivity(activity) {
     await ItineraryActivityServices.deleteItineraryActivity(activity);
     snackbar.value.value = true;
     snackbar.value.color = "green";
-    snackbar.value.text = `${activity.activity.name} deleted successfully!`;
+    snackbar.value.text = `${itineraryActivity.activity.name} deleted successfully!`;
   } catch (error) {
     console.log(error);
     snackbar.value.value = true;
@@ -246,7 +272,7 @@ async function deleteActivity(activity) {
 }
 
 async function checkUpdateActivity() {
-  if (newStep.value.itineraryActivity.length > 0) {
+  if (newStep.value.itineraryActivity) {
     console.log(newStep.value.itineraryActivity);
     for (let i = 0; i < newStep.value.itineraryActivity.length; i++) {
       newActivity.value.id = newStep.value.itineraryActivity[i].id;
@@ -313,7 +339,7 @@ async function deleteFlight(flight) {
     await FlightServices.deleteFlight(flight);
     snackbar.value.value = true;
     snackbar.value.color = "green";
-    snackbar.value.text = `${flight.location} flight deleted successfully!`;
+    snackbar.value.text = `${itineraryFlight.flight.flightNumber} flight deleted successfully!`;
   } catch (error) {
     console.log(error);
     snackbar.value.value = true;
@@ -325,7 +351,7 @@ async function deleteFlight(flight) {
 }
 
 async function checkUpdateFlight() {
-  if (newStep.value.itineraryFlight.length > 0) {
+  if (newStep.value.itineraryFlight) {
     console.log(newStep.value.itineraryFlight);
     for (let i = 0; i < newStep.value.itineraryFlight.length; i++) {
       newFlight.value.id = newStep.value.itineraryFlight[i].id;
@@ -366,7 +392,7 @@ async function addFlight() {
 async function updateFlight() {
   isEditFlight.value = false;
   newFlight.value.itineraryId = itinerary.value.id;
-  newFlight.value.flightId = selectedFlight.value[0].id;
+  newFlight.value.flightId = selectedFlight.value.id;
   await ItineraryFlightServices.updateItineraryFlight(newFlight.value)
     .then(() => {
       snackbar.value = {
@@ -481,7 +507,7 @@ async function addHotel() {
 async function updateHotel() {
   isEditHotel.value = false;
   newHotel.value.itineraryId = itinerary.value.id;
-  newHotel.value.hotelId = selectedHotel.value[0].id;
+  newHotel.value.hotelId = selectedHotel.value.id;
   await ItineraryHotelServices.updateItineraryHotel(newHotel.value)
     .then(() => {
       snackbar.value = {
@@ -508,7 +534,7 @@ async function deleteHotel(hotel) {
       snackbar.value = {
         value: true,
         color: "green",
-        text: "Hotel deleted successfully!",
+        text: `${itineraryHotel.hotel.name} deleted successfully!`,
       };
     })
     .catch((error) => {
@@ -524,7 +550,7 @@ async function deleteHotel(hotel) {
 }
 
 async function checkUpdateHotel() {
-  if (newStep.value.itineraryHotel.length > 0) {
+  if (newStep.value.itineraryHotel) {
     console.log(newStep.value.itineraryHotel);
     for (let i = 0; i < newStep.value.itineraryHotel.length; i++) {
       newHotel.value.id = newStep.value.itineraryHotel[i].id;
@@ -809,108 +835,74 @@ function closeSnackBar() {
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col>
-        <v-card class="rounded-lg elevation-5">
-          <v-card-title
-            ><v-row align="center">
-              <v-col cols="10"
-                ><v-card-title class="headline">Steps </v-card-title>
-              </v-col>
-              <v-col class="d-flex justify-end" cols="2">
-                <v-btn color="accent" @click="openAddStep()">Add</v-btn>
-              </v-col>
-            </v-row>
-          </v-card-title>
-          <v-card-text>
-            <v-table>
-                       <tbody>
-                <tr v-for="step in itinerarySteps" :key="step.id">
-                  <td>{{ step.stepNumber }}</td>
-                  <td>
-                    <v-chip
-                      size="small"
-                      v-for="activity in step.itineraryActivity"
-                      :key="activity.id"
-                      pill
-                      >{{ activity.activity.name }}</v-chip
-                    >
-                  </td>
-                  <td>
-                    <v-icon
-                      size="x-small"
-                      icon="mdi-pencil"
-                      @click="openEditStep(step)"
-                    ></v-icon>
-                  </td>
-                  <td>
-                    <v-icon
-                      size="x-small"
-                      icon="mdi-trash-can"
-                      @click="deleteStep(step)"
-                    >
-                    </v-icon>
-                  </td>
+<v-row>
+  <v-col>
+    <v-card class="rounded-lg elevation-5">
+      <v-card-title>
+        <v-row align="center">
+          <v-col cols="10">
+            <v-card-title class="headline">Steps</v-card-title>
+          </v-col>
+          <v-col class="d-flex justify-end" cols="2">
+            <v-btn color="accent" @click="openAddStep()">Add</v-btn>
+          </v-col>
+        </v-row>
+      </v-card-title>
+      <v-card-text>
+        <v-table>
+          <thead>
+                <tr>
+                  <th class="text-left">Step number</th>
+                  <th class="text-left">Step name</th>
                 </tr>
-                <tr v-for="step in itinerarySteps" :key="step.id">
-                  <td>{{ step.stepNumber }}</td>
-                  <td>
-                    <v-chip
-                      size="small"
-                      v-for="flight in step.itineraryFlight"
-                      :key="flight.id"
-                      pill
-                      >{{ flight.flight.name }}</v-chip
-                    >
-                  </td>
-                  <td>
-                    <v-icon
-                      size="x-small"
-                      icon="mdi-pencil"
-                      @click="openEditStep(step)"
-                    ></v-icon>
-                  </td>
-                  <td>
-                    <v-icon
-                      size="x-small"
-                      icon="mdi-trash-can"
-                      @click="deleteStep(step)"
-                    >
-                    </v-icon>
-                  </td>
-                </tr>
-                <tr v-for="step in itinerarySteps" :key="step.id">
-                  <td>{{ step.stepNumber }}</td>
-                  <td>
-                    <v-chip
-                      size="small"
-                      v-for="hotel in step.itineraryHotel"
-                      :key="hotel.id"
-                      pill
-                      >{{ hotel.hotel.name }}</v-chip
-                    >
-                  </td>
-                  <td>
-                    <v-icon
-                      size="x-small"
-                      icon="mdi-pencil"
-                      @click="openEditStep(step)"
-                    ></v-icon>
-                  </td>
-                  <td>
-                    <v-icon
-                      size="x-small"
-                      icon="mdi-trash-can"
-                      @click="deleteStep(step)"
-                    >
-                    </v-icon>
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
-          </v-card-text> </v-card
-      ></v-col>
-    </v-row>
+            </thead>
+          <tbody>
+            <tr v-for="itineraryStep in itinerarySteps" :key="itineraryStep.id">
+              <td>{{ itineraryStep.stepNumber }}</td>
+              <td>
+                <v-chip
+                  size="small"
+                  v-for="itineraryActivity in itineraryStep.itineraryActivities"
+                  :key="itineraryActivity.id"
+                >
+                  {{ itineraryActivity.activity.name }}
+                </v-chip>
+                <v-chip
+                  size="small"
+                  v-for="itineraryFlight in itineraryStep.itineraryFlights"
+                  :key="itineraryFlight.id"
+                >
+                  {{ itineraryFlight.flight.name }}
+                </v-chip>
+                <v-chip
+                  size="small"
+                  v-for="itineraryHotel in itineraryStep.itineraryHotels"
+                  :key="itineraryHotel.id"
+                >
+                  {{ itineraryHotel.hotel.name }}
+                </v-chip>
+              </td>
+              <td>
+                <v-icon
+                  size="x-small"
+                  icon="mdi-pencil"
+                  @click="openEditStep(itineraryStep)"
+                ></v-icon>
+              </td>
+              <td>
+                <v-icon
+                  size="x-small"
+                  icon="mdi-trash-can"
+                  @click="deleteStep(itineraryStep)"
+                ></v-icon>
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
+      </v-card-text>
+    </v-card>
+  </v-col>
+</v-row>
 
     <v-dialog persistent :model-value="isAddStep || isEditStep" width="800">
       <v-card class="rounded-lg elevation-5">
