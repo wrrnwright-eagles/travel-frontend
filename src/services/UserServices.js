@@ -9,9 +9,9 @@ async function addUser(user) {
 }
 
 async function loginUser(user) {
-  console.log(user); // You should now see your user object with email and password
+  console.log(user); // Access the value property
 
-  return apiClient.post("login", user, { 
+  return apiClient.post("login", user, {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -21,6 +21,7 @@ async function loginUser(user) {
     },
   });
 }
+
 
 async function logoutUser() {
   return apiClient.post("logout");
