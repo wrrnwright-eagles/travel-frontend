@@ -5,14 +5,13 @@ async function getUser() {
 }
 
 async function addUser(user) {
-  console.log("User value:", user); // Check the value being passed to the addUser function
   return apiClient.post("users", user);
 }
 
 async function loginUser(user) {
-  console.log(user); // Access the value property
+  console.log(user); // You should now see your user object with email and password
 
-  return apiClient.post("login", user, {
+  return apiClient.post("login", user, { 
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -36,7 +35,6 @@ async function subscribeToItinerary(email, itineraryId) {
     email: email,
     itineraryId: itineraryId,
   };
-  return apiClient.post("subscribe", payload);
 }
 
 export default {
