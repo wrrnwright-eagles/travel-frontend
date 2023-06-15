@@ -74,6 +74,7 @@ const itineraryHotelSteps = ref([]);
 const isAddStep = ref(false);
 const isEditStep = ref(false);
 
+
 const newHotel = ref({ // Added for Hotels
   id: undefined,
   quantity: undefined,
@@ -156,42 +157,53 @@ async function updateItinerary() {
 
 async function getItinerarySteps() {
   await ItineraryStepServices.getItinerarySteps()
-  .then((response) => {
+  .then(async (response) => {
     itinerarySteps.value = response.data;
-  }) 
+    for (const step of itinerarySteps.value) {
+      const activitiesResponse = await ItineraryActivityServices.getItineraryActivitiesForItinerary(route.params.id);
+      step.itineraryActivities = activitiesResponse.data;
+      const flightResponse = await ItineraryFlightServices.getItineraryFlightsForItinerary(route.params.id);
+      step.itineraryFlights = flightResponse.data;
+      const hotelResponse = await ItineraryHotelServices.getItineraryHotelsForItinerary(route.params.id);
+      step.itineraryHotels = hotelResponse.data;
+    }
+  })
   .catch((error) => {
     console.log(error);
   });
 }
 
 async function getItineraryActivitySteps() {
-  try {
    
-    const response = await ItineraryStepServices.getItineraryStepsForItineraryWithActivities(route.params.id);
-    itineraryActivitySteps.value = response.data;
-  } catch (error) {
-    console.log(error);
-  }
+    await ItineraryStepServices.getItineraryStepsForItineraryWithActivities(route.params.id)
+    .then((response) => {
+      itineraryActivitySteps.value = response.data;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 }
 
 async function getItineraryFlightSteps() {
-  try {
     
-    const response = await ItineraryStepServices.getItineraryStepsForItineraryWithFlights(route.params.id);
+    await ItineraryStepServices.getItineraryStepsForItineraryWithFlights(route.params.id)
+    .then((response) => {
     itineraryFlightSteps.value = response.data;
-    
-  } catch (error) {
+    })
+   .catch((error) => {
     console.log(error);
-  }
+  });
 }
 
 async function getItineraryHotelSteps() {
-  try {
-    const response = await ItineraryStepServices.getItineraryStepsForItineraryWithHotels(route.params.id);
+  
+    await ItineraryStepServices.getItineraryStepsForItineraryWithHotels(route.params.id)
+    .then((response) => {
     itineraryHotelSteps.value = response.data;
-  } catch (error) {
+    })
+  .catch((error) => {
     console.log(error);
-  }
+  });
 }
 
 // ACTIVITY FUNCTIONS
@@ -840,6 +852,9 @@ function closeSnackBar() {
         </v-card>
       </v-col>
     </v-row>
+   <!-- <div>
+      {{ itinerarySteps }}
+    </div> -->
 
 <v-row>
   <v-col>
@@ -865,21 +880,22 @@ function closeSnackBar() {
           <tbody>
             <tr v-for="step in itinerarySteps" 
                 :key="step.id" >
-              <td>{{ step.stepNumber }}</td>
-              <td>
-                <template v-for="activityStep in itineraryActivitySteps">
-                  <v-chip
-                    size="small"
-                    v-if="activityStep.stepNumber === step.stepNumber"
-                    v-for="activity in activityStep.itineraryActivities"
-                    :key="activity.id"
-                  >
-                    {{ activity.activity.name }}
-                  </v-chip>
-                </template>
+              <td>{{ step.stepNumber }}</td>              
+              <td> 
                 <v-chip
                   size="small"
-                  v-for="flight in itineraryFlights"
+                  v-for="activity in step.itineraryActivities"
+                  v-if="step.itineraryActivities[0].itineraryStepId === step.stepNumber"
+                  :key="activity.id"
+                  
+                >
+                  {{ activity.activity.name }}
+                </v-chip>
+                
+                <v-chip
+                  size="small"
+                  v-for="flight in step.itineraryFlights"
+                  v-if="step.itineraryFlights[0].itineraryStepId === step.stepNumber"
                   :key="flight.id"
                   
                 >
@@ -887,7 +903,8 @@ function closeSnackBar() {
                 </v-chip>
                 <v-chip
                   size="small"
-                  v-for="hotel in itineraryHotels"
+                  v-for="hotel in step.itineraryHotels"
+                  v-if="step.itineraryHotels[0].itineraryStepId === step.stepNumber"
                   :key="hotel.id"
                 >
                   {{ hotel.hotel.name }}
