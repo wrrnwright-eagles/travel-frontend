@@ -20,11 +20,6 @@ const router = createRouter({
       component: () => import("./views/EditItinerary.vue"),
     },
     {
-      path: "/itineraries",
-      name: "itineraries",
-      component: () => import("./views/ItineraryList.vue"),
-    },
-    {
       path: "/activities",
       name: "activities",
       component: () => import("./views/ActivityList.vue"),
@@ -38,6 +33,16 @@ const router = createRouter({
       path: "/hotels",
       name: "hotels",
       component: () => import("./views/HotelList.vue"),
+    },
+    {
+      path: "/archived-itineraries",
+      name: "archivedItineraries",
+      component: () => import("./views/ArchivedItineraryList.vue"),
+    },
+    {
+      path: "/past-trips",
+      name: "pastTrips",
+      component: () => import("./views/PastTrips.vue"),
     },
   ],
 });

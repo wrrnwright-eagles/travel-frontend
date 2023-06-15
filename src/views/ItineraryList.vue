@@ -32,7 +32,7 @@ async function getItineraries() {
   if (user.value !== null && user.value.id !== null) {
     await ItineraryServices.getItinerariesByUserId(user.value.id)
       .then((response) => {
-        itineraries.value = response.data; // corrected here
+        itineraries.value = response.data.filter(itinerary => !itinerary.isArchived); // Filter out archived itineraries
       })
       .catch((error) => {
         console.log(error);
@@ -43,7 +43,7 @@ async function getItineraries() {
   } else {
     await ItineraryServices.getItineraries()
       .then((response) => {
-        itineraries.value = response.data; // corrected here
+        itineraries.value = response.data.filter(itinerary => !itinerary.isArchived); // Filter out archived itineraries
       })
       .catch((error) => {
         console.log(error);
@@ -54,6 +54,12 @@ async function getItineraries() {
   }
 }
 
+function handleError(error) {
+  console.log(error);
+  snackbar.value.value = true;
+  snackbar.value.color = "error";
+  snackbar.value.text = error.response.data.message;
+}
 
 async function addItinerary() {
   isAdd.value = false;
@@ -90,26 +96,25 @@ function closeSnackBar() {
   <v-container>
     <div id="body">
       <v-row align="center" class="mb-4">
-        <v-col cols="10"
-          ><v-card-title class="pl-0 text-h4 font-weight-bold"
-            >Itineraries
-          </v-card-title>
+        <v-col cols="10">
+          <v-card-title class="pl-0 text-h4 font-weight-bold">Itineraries</v-card-title>
         </v-col>
-        <v-col class="d-flex justify-end" cols="3">
+        <v-col class="d-flex justify-end" cols="2">
           <v-btn v-if="user !== null && user.isAdmin" color="accent" @click="openAdd()"> Add Itinerary </v-btn>
         </v-col>
       </v-row>
 
       <ItineraryCard
-        v-for="itinerary in itineraries"
-        :key="itineraries.id"
-        :itinerary="itinerary"
-        @deletedList="getLists()"
-      />
+  v-for="itinerary in itineraries"
+  :key="itinerary.id"
+  :itinerary="itinerary"
+  @deletedItinerary="getItineraries()"
+  @archivedItinerary="getItineraries()"  
+/>
 
       <v-dialog persistent v-model="isAdd" width="800">
         <v-card class="rounded-lg elevation-5">
-          <v-card-title class="headline mb-2">Add Itinerary </v-card-title>
+          <v-card-title class="headline mb-2">Add Itinerary</v-card-title>
           <v-card-text>
             <v-text-field
               v-model="newItinerary.name"
@@ -131,18 +136,14 @@ function closeSnackBar() {
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn variant="flat" color="secondary" @click="closeAdd()"
-              >Close</v-btn
-            >
-            <v-btn variant="flat" color="primary" @click="addItinerary()"
-              >Add Itinerary</v-btn
-            >
+            <v-btn variant="flat" color="secondary" @click="closeAdd()">Close</v-btn>
+            <v-btn variant="flat" color="primary" @click="addItinerary()">Add Itinerary</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
+
       <v-snackbar v-model="snackbar.value" rounded="pill">
         {{ snackbar.text }}
-
         <template v-slot:actions>
           <v-btn
             :color="snackbar.color"

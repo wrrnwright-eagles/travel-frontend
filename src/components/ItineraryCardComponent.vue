@@ -1,11 +1,13 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, defineEmits } from "vue";
 import { useRouter } from "vue-router";
 import ItineraryActivityServices from "../services/ItineraryActivityServices.js";
 import ItineraryHotelServices from "../services/ItineraryHotelServices.js";
 import ItineraryFlightServices from "../services/ItineraryFlightServices.js";
 import ItineraryStepServices from "../services/ItineraryStepServices";
+import ItineraryServices from "../services/ItineraryServices.js"; // Assuming that you have ItineraryServices
 import UserServices from "../services/UserServices.js";
+
 
 const snackbar = ref(false);
 const snackbarMessage = ref("");
@@ -22,6 +24,7 @@ const props = defineProps({
     required: true,
   },
 });
+const emit = defineEmits(['archivedItinerary'])
 
 onMounted(async () => {
   await getItineraryActivities();
@@ -77,7 +80,20 @@ async function handleSubscribe() {
     snackbar.value = true;
   }
 }
-defineExpose({ handleSubscribe, snackbar, snackbarMessage, isSubscribed });
+async function handleArchive() {
+  try {
+    await ItineraryServices.archiveItinerary(props.itinerary.id);
+    console.log('Archived Itinerary!');
+    snackbarMessage.value = 'Archived Itinerary!';
+    snackbar.value = true;
+    emit('archivedItinerary', props.itinerary.id); // Emit an event to the parent component
+  } catch (error) {
+    console.error(error);
+    snackbarMessage.value = 'Failed to archive itinerary.';
+    snackbar.value = true;
+  }
+}
+defineExpose({ handleSubscribe, handleArchive, snackbar, snackbarMessage, isSubscribed });
 
 
 
@@ -116,6 +132,14 @@ defineExpose({ handleSubscribe, snackbar, snackbarMessage, isSubscribed });
           >
             {{ isSubscribed ? 'Unsubscribe' : 'Subscribe' }}
           </v-btn>
+          <v-btn
+            v-if="user !== null"
+            color="primary"
+            @click.stop="handleArchive()"
+            class="mt-2"
+          >
+            Archive
+          </v-btn>
         </v-col>
       </v-row>
     </v-card-title>
@@ -134,14 +158,14 @@ defineExpose({ handleSubscribe, snackbar, snackbarMessage, isSubscribed });
           </v-list-item>
         </v-list>
         <h3>Participants</h3>
-<v-list>
-  <v-list-item
-    v-for="participant in itinerary.participants"
-    :key="participant.id"
-  >
-    {{ participant.name }}
-  </v-list-item>
-</v-list>
+        <v-list>
+          <v-list-item
+            v-for="participant in itinerary.participants"
+            :key="participant.id"
+          >
+            {{ participant.name }}
+          </v-list-item>
+        </v-list>
         <h3>Flights</h3>
         <v-list>
           <v-list-item
