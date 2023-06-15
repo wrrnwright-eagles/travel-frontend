@@ -882,33 +882,27 @@ function closeSnackBar() {
                 :key="step.id" >
               <td>{{ step.stepNumber }}</td>              
               <td> 
-                <v-chip
-                  size="small"
-                  v-for="activity in step.itineraryActivities"
-                  v-if="step.itineraryActivities[0].itineraryStepId === step.stepNumber"
-                  :key="activity.id"
-                  
-                >
-                  {{ activity.activity.name }}
-                </v-chip>
-                
-                <v-chip
-                  size="small"
-                  v-for="flight in step.itineraryFlights"
-                  v-if="step.itineraryFlights[0].itineraryStepId === step.stepNumber"
-                  :key="flight.id"
-                  
-                >
-                  {{ flight.flight.flightNumber }}
-                </v-chip>
-                <v-chip
-                  size="small"
-                  v-for="hotel in step.itineraryHotels"
-                  v-if="step.itineraryHotels[0].itineraryStepId === step.stepNumber"
-                  :key="hotel.id"
-                >
-                  {{ hotel.hotel.name }}
-                </v-chip>
+                <template 
+                  v-for="item in step.itineraryActivities"
+                  :key="item.id"> 
+                  <template v-if="item.itineraryStepId === step.stepNumber">
+                  {{ item.activity.name }}
+                </template>
+              </template>
+              <template 
+                  v-for="item in step.itineraryFlights"
+                  :key="item.id"> 
+                  <template v-if="item.itineraryStepId === step.stepNumber">
+                  {{ item.flight.flightNumber }}
+                </template>
+              </template>
+              <template 
+                  v-for="item in step.itineraryHotels"
+                  :key="item.id"> 
+                  <template v-if="item.itineraryStepId === step.stepNumber">
+                  {{ item.hotel.name }}
+                </template>
+              </template>
               </td>
               <td>
                 <v-icon
