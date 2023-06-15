@@ -7,7 +7,7 @@ import ItineraryFlightServices from "../services/ItineraryFlightServices.js";
 import ItineraryStepServices from "../services/ItineraryStepServices";
 import ItineraryServices from "../services/ItineraryServices.js"; // Assuming that you have ItineraryServices
 import UserServices from "../services/UserServices.js";
-
+import DownloadCSV from "vue-json-csv";
 
 const snackbar = ref(false);
 const snackbarMessage = ref("");
@@ -24,12 +24,15 @@ const props = defineProps({
     required: true,
   },
 });
-const emit = defineEmits(['archivedItinerary'])
+const emit = defineEmits(['archivedItinerary']);
+const csvData = ref([])
 
 onMounted(async () => {
   await getItineraryActivities();
   await getItinerarySteps();
   user.value = JSON.parse(localStorage.getItem("user"));
+  const { itineraryActivity , ...restItenaryData } = props.itinerary;
+  csvData.value = [restItenaryData]
 });
 
 async function getItineraryActivities() {
@@ -140,6 +143,16 @@ defineExpose({ handleSubscribe, handleArchive, snackbar, snackbarMessage, isSubs
           >
             Archive
           </v-btn>
+            <div class="text-center" style="margin:10px 0">
+        <v-btn
+          append-icon="mdi-download"
+          color="yellow"
+        >
+        <DownloadCSV :data="csvData" name="itenary-data.csv">
+            Export
+          </DownloadCSV>
+        </v-btn>
+      </div>
         </v-col>
       </v-row>
     </v-card-title>
