@@ -67,8 +67,10 @@ const itineraryHotel = ref({});
 const itineraryHotels = ref([]);
 const isAddHotel = ref(false);
 const isEditHotel = ref(false);
-const step = ref({});
 const itinerarySteps = ref([]);
+const itineraryActivitySteps = ref([]);
+const itineraryFlightSteps = ref([]);
+const itineraryHotelSteps = ref([]);
 const isAddStep = ref(false);
 const isEditStep = ref(false);
 
@@ -153,18 +155,20 @@ async function updateItinerary() {
 }
 
 async function getItinerarySteps() {
-  try {
-    const response = await ItineraryStepServices.getItinerarySteps(route.params.id);
+  await ItineraryStepServices.getItinerarySteps()
+  .then((response) => {
     itinerarySteps.value = response.data;
-  } catch (error) {
+  }) 
+  .catch((error) => {
     console.log(error);
-  }
+  });
 }
 
 async function getItineraryActivitySteps() {
   try {
+   
     const response = await ItineraryStepServices.getItineraryStepsForItineraryWithActivities(route.params.id);
-    itinerarySteps.value = response.data;
+    itineraryActivitySteps.value = response.data;
   } catch (error) {
     console.log(error);
   }
@@ -172,8 +176,10 @@ async function getItineraryActivitySteps() {
 
 async function getItineraryFlightSteps() {
   try {
+    
     const response = await ItineraryStepServices.getItineraryStepsForItineraryWithFlights(route.params.id);
-    itinerarySteps.value = response.data;
+    itineraryFlightSteps.value = response.data;
+    
   } catch (error) {
     console.log(error);
   }
@@ -182,7 +188,7 @@ async function getItineraryFlightSteps() {
 async function getItineraryHotelSteps() {
   try {
     const response = await ItineraryStepServices.getItineraryStepsForItineraryWithHotels(route.params.id);
-    itinerarySteps.value = response.data;
+    itineraryHotelSteps.value = response.data;
   } catch (error) {
     console.log(error);
   }
@@ -857,43 +863,48 @@ function closeSnackBar() {
                 </tr>
             </thead>
           <tbody>
-            <tr v-for="itineraryStep in itinerarySteps" :key="itineraryStep.id">
-              <td>{{ itineraryStep.stepNumber }}</td>
+            <tr v-for="step in itinerarySteps" 
+                :key="step.id" >
+              <td>{{ step.stepNumber }}</td>
               <td>
+                <template v-for="activityStep in itineraryActivitySteps">
+                  <v-chip
+                    size="small"
+                    v-if="activityStep.stepNumber === step.stepNumber"
+                    v-for="activity in activityStep.itineraryActivities"
+                    :key="activity.id"
+                  >
+                    {{ activity.activity.name }}
+                  </v-chip>
+                </template>
                 <v-chip
                   size="small"
-                  v-for="itineraryActivity in itineraryStep.itineraryActivities"
-                  :key="itineraryActivity.id"
+                  v-for="flight in itineraryFlights"
+                  :key="flight.id"
+                  
                 >
-                  {{ itineraryActivity.activity.name }}
+                  {{ flight.flight.flightNumber }}
                 </v-chip>
                 <v-chip
                   size="small"
-                  v-for="itineraryFlight in itineraryStep.itineraryFlights"
-                  :key="itineraryFlight.id"
+                  v-for="hotel in itineraryHotels"
+                  :key="hotel.id"
                 >
-                  {{ itineraryFlight.flight.name }}
-                </v-chip>
-                <v-chip
-                  size="small"
-                  v-for="itineraryHotel in itineraryStep.itineraryHotels"
-                  :key="itineraryHotel.id"
-                >
-                  {{ itineraryHotel.hotel.name }}
+                  {{ hotel.hotel.name }}
                 </v-chip>
               </td>
               <td>
                 <v-icon
                   size="x-small"
                   icon="mdi-pencil"
-                  @click="openEditStep(itineraryStep)"
+                  @click="openEditStep(step)"
                 ></v-icon>
               </td>
               <td>
                 <v-icon
                   size="x-small"
                   icon="mdi-trash-can"
-                  @click="deleteStep(itineraryStep)"
+                  @click="deleteStep(step)"
                 ></v-icon>
               </td>
             </tr>
