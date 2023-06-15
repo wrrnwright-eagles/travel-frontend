@@ -44,7 +44,6 @@ async function getActivities() {
 
 async function addActivity() {
   isAdd.value = false;
-  delete newActivity.id;
   await ActivityServices.addActivity(newActivity.value)
     .then(() => {
       snackbar.value.value = true;
