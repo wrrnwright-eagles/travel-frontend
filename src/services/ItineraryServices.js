@@ -19,4 +19,16 @@ export default {
   deleteItinerary(itineraryId) {
     return apiClient.delete("itineraries/" + itineraryId);
   },
+  archiveItinerary(itineraryId) {
+    return apiClient.put("itineraries/archive/" + itineraryId);
+  },
+  getArchivedItineraries() {
+    return apiClient.get("itineraries/archived")
+    .catch(error => {
+      console.error('There was an error!', error);
+    });
+  },
+  getArchivedItinerariesByUserId(userId) {
+    return apiClient.get("itineraries/archived/" + userId);
+  }
 };
