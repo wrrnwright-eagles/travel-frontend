@@ -9,6 +9,7 @@ import FlightServices from "../services/FlightServices.js";
 import ItineraryFlightServices from "../services/ItineraryFlightServices.js";
 import ItineraryStepServices from "../services/ItineraryStepServices.js";
 import ItineraryServices from "../services/ItineraryServices.js";
+import ItineraryParticipantsServices from "../services/ItineraryParticipantsServices";
 
 const props = defineProps({
   itinerary: {
@@ -18,7 +19,7 @@ const props = defineProps({
       location: "",
       isPublished: false,
       description: "",
-      people: [],
+      participants: [],
     }),
     required: true
   },
@@ -36,7 +37,7 @@ const itinerary = ref({
 });
 const personToAdd = ref("");
 
-const addPerson = () => {
+const addParticipant = () => {
   if (personToAdd.value.trim() !== '') {
     // Ensuring 'people' is an array before pushing
     if (!Array.isArray(itinerary.value.people)) {
@@ -125,6 +126,7 @@ onMounted(async () => {
   await getItineraryActivitySteps();
   await getItineraryFlightSteps();
   await getItineraryHotelSteps();
+  await getItineraryParticipants();
 });
 
 async function getItinerary() {
@@ -136,9 +138,6 @@ async function getItinerary() {
     console.log(error);
   }
 }
-
-
-
 async function updateItinerary() {
   try {
     await ItineraryServices.updateItinerary(itinerary.value.id, itinerary.value);
@@ -194,6 +193,15 @@ async function getItineraryHotelSteps() {
   }
 }
 
+async function getItineraryParticipants() {
+  try {
+    const response = await ItineraryParticipantsServices.getItineraryParticipantsForItinerary(route.params.id);
+    itineraryParticipants.value = response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 // ACTIVITY FUNCTIONS
 async function getActivities() {
   try {
@@ -217,30 +225,29 @@ async function getItineraryActivities() {
     });
 }
 
-async function addActivity() {
-  console.log("selectedActivity = " + (selectedActivity.value[0].id));
+async function addActivity(activity) {
+  console.log("selectedActivity = " + activity.id);
   isAddActivity.value = false;
   newActivity.value.itineraryId = itinerary.value.id;
   newActivity.value.quantity = 1;
-  newActivity.value.activityId = selectedActivity.value[0].id;
-  console.log("newActivity = " + newActivity.value);
+  newActivity.value.activityId = activity.id;
+  console.log("newActivity = ", newActivity.value);
   delete newActivity.value.id;
-  await ItineraryActivityServices.addItineraryActivity(newActivity.value)
-    .then(() => {
-      snackbar.value.value = true;
-      snackbar.value.color = "green";
-      snackbar.value.text = `Activity added successfully!`;
-    })
-    .catch((error) => {
-      console.log(error);
-      snackbar.value.value = true;
-      snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
-    });
 
+  try {
+    await ItineraryActivityServices.addItineraryActivity(newActivity.value)
+    snackbar.value.value = true;
+    snackbar.value.color = "green";
+    snackbar.value.text = `Activity added successfully!`;
+  } catch (error) {
+    console.log(error);
+    snackbar.value.value = true;
+    snackbar.value.color = "error";
+    snackbar.value.text = error.response.data.message;
+  }
+    
   await getItineraryActivities();
 }
-
 
 async function updateActivity() {
   isEditActivity.value = false;
@@ -369,28 +376,28 @@ async function checkUpdateFlight() {
   }
 }
 
-async function addFlight() {
-  console.log(selectedFlight.value);
+async function addFlight(flight) {
+  console.log("selectedFlight = " + flight.id);
   isAddFlight.value = false;
   newFlight.value.quantity = 1;
   newFlight.value.itineraryId = itinerary.value.id;
-  newFlight.value.flightId = selectedFlight.value[0].id;
-  await ItineraryFlightServices.addItineraryFlight(newFlight.value)
-    .then(() => {
-      snackbar.value = {
-        value: true,
-        color: "green",
-        text: "Flight added successfully!",
-      };
-    })
-    .catch((error) => {
-      console.log(error);
-      snackbar.value = {
-        value: true,
-        color: "error",
-        text: error.response.data.message,
-      };
-    });
+  newFlight.value.flightId = flight.id;
+  
+  try {
+    await ItineraryFlightServices.addItineraryFlight(newFlight.value);
+    snackbar.value = {
+      value: true,
+      color: "green",
+      text: "Flight added successfully!",
+    };
+  } catch (error) {
+    console.log(error);
+    snackbar.value = {
+      value: true,
+      color: "error",
+      text: error.response.data.message,
+    };
+  }
 
   await getItineraryFlights();
 }
@@ -483,29 +490,29 @@ async function getHotels() {
 //  }
 }
 
-async function addHotel() {
-  console.log(selectedHotel.value);
+async function addHotel(hotel) {
+  console.log("selectedHotel = " + hotel.id);
   isAddHotel.value = false;
   newHotel.value.quantity = 1;
   newHotel.value.itineraryId = itinerary.value.id;
-  newHotel.value.hotelId = selectedHotel.value[0].id;
+  newHotel.value.hotelId = hotel.id;
   delete newHotel.value.id;
-  await ItineraryHotelServices.addItineraryHotel(newHotel.value)
-    .then(() => {
-      snackbar.value = {
-        value: true,
-        color: "green",
-        text: "Hotel added to Itinerary successfully!",
-      };
-    })
-    .catch((error) => {
-      console.log(error);
-      snackbar.value = {
-        value: true,
-        color: "error",
-        text: error.response.data.message,
-      };
-    });
+  
+  try {
+    await ItineraryHotelServices.addItineraryHotel(newHotel.value);
+    snackbar.value = {
+      value: true,
+      color: "green",
+      text: "Hotel added to Itinerary successfully!",
+    };
+  } catch (error) {
+    console.log(error);
+    snackbar.value = {
+      value: true,
+      color: "error",
+      text: error.response.data.message,
+    };
+  }
 
   await getItineraryHotels();
 }
@@ -601,48 +608,32 @@ function openEditHotel(hotel) {
 function closeAddHotel() {
   isAddHotel.value = false;
 }
-
-// STEP FUNCTIONS
-async function addStep() {
+async function addStep(step) {
+  console.log("selectedStep = " + step.id);
   isAddStep.value = false;
   newStep.value.itineraryId = itinerary.value.id;
   delete newStep.value.id;
+  
   try {
     const data = await ItineraryStepServices.addItineraryStep(newStep.value);
     newStep.value.id = data.data.id;
-    snackbar.value.value = true;
-    snackbar.value.color = "green";
-    snackbar.value.text = `Step added successfully!`;
+    snackbar.value = {
+      value: true,
+      color: "green",
+      text: "Step added successfully!",
+    };
   } catch (error) {
     console.log(error);
-    snackbar.value.value = true;
-    snackbar.value.value.color = "error";
-    snackbar.value.text = error.response.data.message;
+    snackbar.value = {
+      value: true,
+      color: "error",
+      text: error.response.data.message,
+    };
   }
-  try {
-    await checkUpdateActivity();
-  } catch (error) {
-      console.log(error);
-      snackbar.value.value = true;
-      snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
-    }
-  try {
+
+  await checkUpdateActivity();
   await checkUpdateFlight();
-  } catch (error) {
-      console.log(error);
-      snackbar.value.value = true;
-      snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
-    }
-  try {
   await checkUpdateHotel();
-  } catch (error) {
-      console.log(error);
-      snackbar.value.value = true;
-      snackbar.value.color = "error";
-      snackbar.value.text = error.response.data.message;
-    }
   await getItinerarySteps();
 }
 
@@ -789,7 +780,7 @@ function closeSnackBar() {
         label="People to Add to Trip"
         required
       ></v-text-field>
-      <v-btn class="mb-1" color="primary" @click="addPerson">Add</v-btn>
+      <v-btn class="mb-1" color="primary" @click="addParticipant">Add</v-btn>
       <v-text-field
         v-model.number="itinerary.location"
         label="Location"
